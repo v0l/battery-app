@@ -44,6 +44,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  RustStreamSink<StreamEvent> dco_decode_StreamSink_stream_event_Sse(
+    dynamic raw,
+  );
+
+  @protected
   String dco_decode_String(dynamic raw);
 
   @protected
@@ -53,16 +58,37 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool dco_decode_bool(dynamic raw);
 
   @protected
+  BatteryStatus dco_decode_box_autoadd_battery_status(dynamic raw);
+
+  @protected
   bool dco_decode_box_autoadd_bool(dynamic raw);
+
+  @protected
+  CellInfo dco_decode_box_autoadd_cell_info(dynamic raw);
 
   @protected
   double dco_decode_box_autoadd_f_32(dynamic raw);
 
   @protected
+  double dco_decode_box_autoadd_f_64(dynamic raw);
+
+  @protected
   PortDirection dco_decode_box_autoadd_port_direction(dynamic raw);
 
   @protected
-  int dco_decode_box_autoadd_u_32(dynamic raw);
+  PortInfo dco_decode_box_autoadd_port_info(dynamic raw);
+
+  @protected
+  Sensor dco_decode_box_autoadd_sensor(dynamic raw);
+
+  @protected
+  Setting dco_decode_box_autoadd_setting(dynamic raw);
+
+  @protected
+  StatusUpdate dco_decode_box_autoadd_status_update(dynamic raw);
+
+  @protected
+  Switch dco_decode_box_autoadd_switch(dynamic raw);
 
   @protected
   Caps dco_decode_caps(dynamic raw);
@@ -81,6 +107,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   double dco_decode_f_32(dynamic raw);
+
+  @protected
+  double dco_decode_f_64(dynamic raw);
 
   @protected
   int dco_decode_i_32(dynamic raw);
@@ -104,6 +133,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<Sensor> dco_decode_list_sensor(dynamic raw);
 
   @protected
+  List<Setting> dco_decode_list_setting(dynamic raw);
+
+  @protected
   List<Switch> dco_decode_list_switch(dynamic raw);
 
   @protected
@@ -116,10 +148,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   double? dco_decode_opt_box_autoadd_f_32(dynamic raw);
 
   @protected
-  PortDirection? dco_decode_opt_box_autoadd_port_direction(dynamic raw);
+  double? dco_decode_opt_box_autoadd_f_64(dynamic raw);
 
   @protected
-  int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
+  PortDirection? dco_decode_opt_box_autoadd_port_direction(dynamic raw);
 
   @protected
   PortDirection dco_decode_port_direction(dynamic raw);
@@ -131,10 +163,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Sensor dco_decode_sensor(dynamic raw);
 
   @protected
-  Switch dco_decode_switch(dynamic raw);
+  SensorUnit dco_decode_sensor_unit(dynamic raw);
 
   @protected
-  int dco_decode_u_32(dynamic raw);
+  Setting dco_decode_setting(dynamic raw);
+
+  @protected
+  SettingKind dco_decode_setting_kind(dynamic raw);
+
+  @protected
+  SettingValue dco_decode_setting_value(dynamic raw);
+
+  @protected
+  StatusUpdate dco_decode_status_update(dynamic raw);
+
+  @protected
+  StreamEvent dco_decode_stream_event(dynamic raw);
+
+  @protected
+  Switch dco_decode_switch(dynamic raw);
 
   @protected
   BigInt dco_decode_u_64(dynamic raw);
@@ -170,6 +217,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  RustStreamSink<StreamEvent> sse_decode_StreamSink_stream_event_Sse(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
@@ -179,10 +231,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
+  BatteryStatus sse_decode_box_autoadd_battery_status(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   bool sse_decode_box_autoadd_bool(SseDeserializer deserializer);
 
   @protected
+  CellInfo sse_decode_box_autoadd_cell_info(SseDeserializer deserializer);
+
+  @protected
   double sse_decode_box_autoadd_f_32(SseDeserializer deserializer);
+
+  @protected
+  double sse_decode_box_autoadd_f_64(SseDeserializer deserializer);
 
   @protected
   PortDirection sse_decode_box_autoadd_port_direction(
@@ -190,7 +253,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
+  PortInfo sse_decode_box_autoadd_port_info(SseDeserializer deserializer);
+
+  @protected
+  Sensor sse_decode_box_autoadd_sensor(SseDeserializer deserializer);
+
+  @protected
+  Setting sse_decode_box_autoadd_setting(SseDeserializer deserializer);
+
+  @protected
+  StatusUpdate sse_decode_box_autoadd_status_update(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  Switch sse_decode_box_autoadd_switch(SseDeserializer deserializer);
 
   @protected
   Caps sse_decode_caps(SseDeserializer deserializer);
@@ -209,6 +286,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   double sse_decode_f_32(SseDeserializer deserializer);
+
+  @protected
+  double sse_decode_f_64(SseDeserializer deserializer);
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
@@ -234,6 +314,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<Sensor> sse_decode_list_sensor(SseDeserializer deserializer);
 
   @protected
+  List<Setting> sse_decode_list_setting(SseDeserializer deserializer);
+
+  @protected
   List<Switch> sse_decode_list_switch(SseDeserializer deserializer);
 
   @protected
@@ -246,12 +329,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   double? sse_decode_opt_box_autoadd_f_32(SseDeserializer deserializer);
 
   @protected
+  double? sse_decode_opt_box_autoadd_f_64(SseDeserializer deserializer);
+
+  @protected
   PortDirection? sse_decode_opt_box_autoadd_port_direction(
     SseDeserializer deserializer,
   );
-
-  @protected
-  int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
   PortDirection sse_decode_port_direction(SseDeserializer deserializer);
@@ -263,10 +346,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Sensor sse_decode_sensor(SseDeserializer deserializer);
 
   @protected
-  Switch sse_decode_switch(SseDeserializer deserializer);
+  SensorUnit sse_decode_sensor_unit(SseDeserializer deserializer);
 
   @protected
-  int sse_decode_u_32(SseDeserializer deserializer);
+  Setting sse_decode_setting(SseDeserializer deserializer);
+
+  @protected
+  SettingKind sse_decode_setting_kind(SseDeserializer deserializer);
+
+  @protected
+  SettingValue sse_decode_setting_value(SseDeserializer deserializer);
+
+  @protected
+  StatusUpdate sse_decode_status_update(SseDeserializer deserializer);
+
+  @protected
+  StreamEvent sse_decode_stream_event(SseDeserializer deserializer);
+
+  @protected
+  Switch sse_decode_switch(SseDeserializer deserializer);
 
   @protected
   BigInt sse_decode_u_64(SseDeserializer deserializer);
@@ -308,6 +406,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_StreamSink_stream_event_Sse(
+    RustStreamSink<StreamEvent> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
@@ -317,10 +421,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_battery_status(
+    BatteryStatus self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_bool(bool self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_cell_info(
+    CellInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_f_32(double self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_f_64(double self, SseSerializer serializer);
 
   @protected
   void sse_encode_box_autoadd_port_direction(
@@ -329,7 +448,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
+  void sse_encode_box_autoadd_port_info(
+    PortInfo self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_sensor(Sensor self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_setting(Setting self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_status_update(
+    StatusUpdate self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_switch(Switch self, SseSerializer serializer);
 
   @protected
   void sse_encode_caps(Caps self, SseSerializer serializer);
@@ -351,6 +488,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_f_32(double self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_f_64(double self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
@@ -380,6 +520,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_sensor(List<Sensor> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_setting(List<Setting> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_switch(List<Switch> self, SseSerializer serializer);
 
   @protected
@@ -392,13 +535,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_opt_box_autoadd_f_32(double? self, SseSerializer serializer);
 
   @protected
+  void sse_encode_opt_box_autoadd_f_64(double? self, SseSerializer serializer);
+
+  @protected
   void sse_encode_opt_box_autoadd_port_direction(
     PortDirection? self,
     SseSerializer serializer,
   );
-
-  @protected
-  void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
 
   @protected
   void sse_encode_port_direction(PortDirection self, SseSerializer serializer);
@@ -410,10 +553,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_sensor(Sensor self, SseSerializer serializer);
 
   @protected
-  void sse_encode_switch(Switch self, SseSerializer serializer);
+  void sse_encode_sensor_unit(SensorUnit self, SseSerializer serializer);
 
   @protected
-  void sse_encode_u_32(int self, SseSerializer serializer);
+  void sse_encode_setting(Setting self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_setting_kind(SettingKind self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_setting_value(SettingValue self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_status_update(StatusUpdate self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_stream_event(StreamEvent self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_switch(Switch self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_64(BigInt self, SseSerializer serializer);

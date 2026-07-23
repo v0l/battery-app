@@ -102,7 +102,8 @@ dependencies = [
 
 [[package]]
 name = "anker_solix"
-version = "0.3.0"
+version = "0.4.0"
+source = "git+https://github.com/v0l/anker-rs.git?rev=b7b110946f8d860367f92a162b6e8f33c828248b#b7b110946f8d860367f92a162b6e8f33c828248b"
 dependencies = [
  "aes 0.8.4",
  "aes-gcm",
@@ -262,6 +263,7 @@ dependencies = [
  "async-trait",
  "bitflags 2.13.1",
  "dalybms",
+ "futures-core",
  "futures-util",
  "jk_bms",
  "log",
@@ -424,7 +426,7 @@ dependencies = [
  "dbus",
  "dbus-tokio",
  "futures",
- "itertools 0.14.0",
+ "itertools",
  "log",
  "serde",
  "serde-xml-rs",
@@ -1037,15 +1039,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "embedded-can"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9d2e857f87ac832df68fa498d18ddc679175cf3d2e4aa893988e5601baf9438"
-dependencies = [
- "nb",
-]
-
-[[package]]
 name = "env_filter"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1415,15 +1408,6 @@ checksum = "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695"
 
 [[package]]
 name = "itertools"
-version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
-dependencies = [
- "either",
-]
-
-[[package]]
-name = "itertools"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b192c782037fadd9cfa75548310488aabdbf3d2da73885b31bd0abd03351285"
@@ -1484,9 +1468,9 @@ dependencies = [
 
 [[package]]
 name = "jk_bms"
-version = "0.3.0"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33f0b3df5a365adfb46519a827f34d64e5194530f18eb5f24b92ed82189d017d"
+checksum = "0b222ca33368d1843a7ec2909265a1538175f8db088db2f93accebb789d2ea9e"
 dependencies = [
  "async-trait",
  "btleplug",
@@ -1496,7 +1480,6 @@ dependencies = [
  "log",
  "serde",
  "serde_json",
- "socketcan",
  "thiserror 2.0.19",
  "tokio",
  "tokio-serial",
@@ -1624,15 +1607,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f665ee40bc4a3c5590afb1e9677db74a508659dfd71e126420da8274909a0167"
 
 [[package]]
-name = "memoffset"
-version = "0.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "488016bfae457b036d996092f6cb448677611ce4449e970ceaf42695203f218a"
-dependencies = [
- "autocfg",
-]
-
-[[package]]
 name = "miniz_oxide"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1667,37 +1641,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nb"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d5439c4ad607c3c23abf66de8c8bf57ba8adcd1f129e699851a6e43935d339d"
-
-[[package]]
-name = "neli"
-version = "0.6.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93062a0dce6da2517ea35f301dfc88184ce18d3601ec786a727a87bf535deca9"
-dependencies = [
- "byteorder",
- "libc",
- "log",
- "neli-proc-macros",
-]
-
-[[package]]
-name = "neli-proc-macros"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c8034b7fbb6f9455b2a96c19e6edf8dc9fc34c70449938d8ee3b4df363f61fe"
-dependencies = [
- "either",
- "proc-macro2",
- "quote",
- "serde",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "nix"
 version = "0.26.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1729,7 +1672,6 @@ dependencies = [
  "cfg-if",
  "cfg_aliases",
  "libc",
- "memoffset",
 ]
 
 [[package]]
@@ -2128,7 +2070,10 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "battery_control",
+ "btleplug",
  "flutter_rust_bridge",
+ "futures-util",
+ "jni",
  "tokio",
 ]
 
@@ -2284,44 +2229,12 @@ checksum = "8ed6a63f02c8539c91a8685a86f4099661ba3da017932f6ebbea6de3f0fa7c90"
 
 [[package]]
 name = "socket2"
-version = "0.5.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e22376abed350d73dd1cd119b57ffccad95b4e585a7cda43e286245ce23c0678"
-dependencies = [
- "libc",
- "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "socket2"
 version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4"
 dependencies = [
  "libc",
  "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "socketcan"
-version = "3.6.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea24328be148eea05f36bc3991b1c174c586853e04d1480b92429b2df6aea865"
-dependencies = [
- "bitflags 2.13.1",
- "embedded-can",
- "futures",
- "hex",
- "itertools 0.13.0",
- "libc",
- "log",
- "mio",
- "nb",
- "neli",
- "nix 0.29.0",
- "socket2 0.5.10",
- "thiserror 2.0.19",
- "tokio",
 ]
 
 [[package]]
@@ -2551,7 +2464,7 @@ dependencies = [
  "libc",
  "mio",
  "pin-project-lite",
- "socket2 0.6.5",
+ "socket2",
  "tokio-macros",
  "windows-sys 0.61.2",
 ]

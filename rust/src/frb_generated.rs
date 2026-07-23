@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.12.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1878742325;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1173176299;
 
 // Section: executor
 
@@ -205,16 +205,15 @@ fn wire__crate__api__battery__BatteryConn_set_impl(
     )
 }
 fn wire__crate__api__battery__BatteryConn_status_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
             debug_name: "BatteryConn_status",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
         },
         move || {
             let message = unsafe {
@@ -230,33 +229,26 @@ fn wire__crate__api__battery__BatteryConn_status_impl(
                 flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BatteryConn>,
             >>::sse_decode(&mut deserializer);
             deserializer.end();
-            move |context| async move {
-                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
-                    (move || async move {
-                        let mut api_that_guard = None;
-                        let decode_indices_ =
-                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
-                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                                    &api_that, 0, false,
-                                )],
-                            );
-                        for i in decode_indices_ {
-                            match i {
-                                0 => {
-                                    api_that_guard =
-                                        Some(api_that.lockable_decode_async_ref().await)
-                                }
-                                _ => unreachable!(),
-                            }
-                        }
-                        let api_that_guard = api_that_guard.unwrap();
-                        let output_ok =
-                            crate::api::battery::BatteryConn::status(&*api_that_guard).await?;
-                        Ok(output_ok)
-                    })()
-                    .await,
-                )
-            }
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, false,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                        _ => unreachable!(),
+                    }
+                }
+                let api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok(crate::api::battery::BatteryConn::status(
+                    &*api_that_guard,
+                ))?;
+                Ok(output_ok)
+            })())
         },
     )
 }
@@ -314,6 +306,68 @@ fn wire__crate__api__battery__BatteryConn_toggle_impl(
                             api_on,
                         )
                         .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__battery__BatteryConn_watch_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "BatteryConn_watch",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BatteryConn>,
+            >>::sse_decode(&mut deserializer);
+            let api_sink = <StreamSink<
+                crate::api::battery::StreamEvent,
+                flutter_rust_bridge::for_generated::SseCodec,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = Result::<_, ()>::Ok({
+                            crate::api::battery::BatteryConn::watch(&*api_that_guard, api_sink)
+                                .await;
+                        })?;
                         Ok(output_ok)
                     })()
                     .await,
@@ -499,6 +553,16 @@ impl SseDecode
     }
 }
 
+impl SseDecode
+    for StreamSink<crate::api::battery::StreamEvent, flutter_rust_bridge::for_generated::SseCodec>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <String>::sse_decode(deserializer);
+        return StreamSink::deserialize(inner);
+    }
+}
+
 impl SseDecode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -510,53 +574,19 @@ impl SseDecode for String {
 impl SseDecode for crate::api::battery::BatteryStatus {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut var_soc = <Option<f32>>::sse_decode(deserializer);
-        let mut var_soh = <Option<f32>>::sse_decode(deserializer);
-        let mut var_voltage = <Option<f32>>::sse_decode(deserializer);
-        let mut var_current = <Option<f32>>::sse_decode(deserializer);
-        let mut var_powerIn = <Option<f32>>::sse_decode(deserializer);
-        let mut var_powerOut = <Option<f32>>::sse_decode(deserializer);
-        let mut var_temperatures = <Vec<crate::api::battery::Sensor>>::sse_decode(deserializer);
-        let mut var_timeRemainingH = <Option<f32>>::sse_decode(deserializer);
-        let mut var_capacityRemainingAh = <Option<f32>>::sse_decode(deserializer);
-        let mut var_capacityFullAh = <Option<f32>>::sse_decode(deserializer);
-        let mut var_cycles = <Option<u32>>::sse_decode(deserializer);
-        let mut var_charging = <Option<bool>>::sse_decode(deserializer);
-        let mut var_discharging = <Option<bool>>::sse_decode(deserializer);
+        let mut var_sensors = <Vec<crate::api::battery::Sensor>>::sse_decode(deserializer);
         let mut var_switches = <Vec<crate::api::battery::Switch>>::sse_decode(deserializer);
-        let mut var_chargeCurrentLimitA = <Option<f32>>::sse_decode(deserializer);
-        let mut var_dischargeCurrentLimitA = <Option<f32>>::sse_decode(deserializer);
-        let mut var_socLimitMax = <Option<f32>>::sse_decode(deserializer);
-        let mut var_socLimitMin = <Option<f32>>::sse_decode(deserializer);
-        let mut var_cells = <Vec<crate::api::battery::CellInfo>>::sse_decode(deserializer);
         let mut var_ports = <Vec<crate::api::battery::PortInfo>>::sse_decode(deserializer);
+        let mut var_cells = <Vec<crate::api::battery::CellInfo>>::sse_decode(deserializer);
+        let mut var_settings = <Vec<crate::api::battery::Setting>>::sse_decode(deserializer);
         let mut var_alarms = <Vec<String>>::sse_decode(deserializer);
-        let mut var_temperatureC = <Option<f32>>::sse_decode(deserializer);
-        let mut var_cellDelta = <Option<f32>>::sse_decode(deserializer);
         return crate::api::battery::BatteryStatus {
-            soc: var_soc,
-            soh: var_soh,
-            voltage: var_voltage,
-            current: var_current,
-            power_in: var_powerIn,
-            power_out: var_powerOut,
-            temperatures: var_temperatures,
-            time_remaining_h: var_timeRemainingH,
-            capacity_remaining_ah: var_capacityRemainingAh,
-            capacity_full_ah: var_capacityFullAh,
-            cycles: var_cycles,
-            charging: var_charging,
-            discharging: var_discharging,
+            sensors: var_sensors,
             switches: var_switches,
-            charge_current_limit_a: var_chargeCurrentLimitA,
-            discharge_current_limit_a: var_dischargeCurrentLimitA,
-            soc_limit_max: var_socLimitMax,
-            soc_limit_min: var_socLimitMin,
-            cells: var_cells,
             ports: var_ports,
+            cells: var_cells,
+            settings: var_settings,
             alarms: var_alarms,
-            temperature_c: var_temperatureC,
-            cell_delta: var_cellDelta,
         };
     }
 }
@@ -577,7 +607,6 @@ impl SseDecode for crate::api::battery::Caps {
         let mut var_readTemperature = <bool>::sse_decode(deserializer);
         let mut var_readLimits = <bool>::sse_decode(deserializer);
         let mut var_readAlarms = <bool>::sse_decode(deserializer);
-        let mut var_togglePorts = <bool>::sse_decode(deserializer);
         let mut var_toggleCharge = <bool>::sse_decode(deserializer);
         let mut var_toggleDischarge = <bool>::sse_decode(deserializer);
         let mut var_toggleBalancer = <bool>::sse_decode(deserializer);
@@ -591,7 +620,6 @@ impl SseDecode for crate::api::battery::Caps {
             read_temperature: var_readTemperature,
             read_limits: var_readLimits,
             read_alarms: var_readAlarms,
-            toggle_ports: var_togglePorts,
             toggle_charge: var_toggleCharge,
             toggle_discharge: var_toggleDischarge,
             toggle_balancer: var_toggleBalancer,
@@ -667,6 +695,13 @@ impl SseDecode for f32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         deserializer.cursor.read_f32::<NativeEndian>().unwrap()
+    }
+}
+
+impl SseDecode for f64 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_f64::<NativeEndian>().unwrap()
     }
 }
 
@@ -751,6 +786,18 @@ impl SseDecode for Vec<crate::api::battery::Sensor> {
     }
 }
 
+impl SseDecode for Vec<crate::api::battery::Setting> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::battery::Setting>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::battery::Switch> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -796,6 +843,17 @@ impl SseDecode for Option<f32> {
     }
 }
 
+impl SseDecode for Option<f64> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<f64>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for Option<crate::api::battery::PortDirection> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -803,17 +861,6 @@ impl SseDecode for Option<crate::api::battery::PortDirection> {
             return Some(<crate::api::battery::PortDirection>::sse_decode(
                 deserializer,
             ));
-        } else {
-            return None;
-        }
-    }
-}
-
-impl SseDecode for Option<u32> {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        if (<bool>::sse_decode(deserializer)) {
-            return Some(<u32>::sse_decode(deserializer));
         } else {
             return None;
         }
@@ -842,12 +889,14 @@ impl SseDecode for crate::api::battery::PortInfo {
             <Option<crate::api::battery::PortDirection>>::sse_decode(deserializer);
         let mut var_on_ = <Option<bool>>::sse_decode(deserializer);
         let mut var_watts = <Option<f32>>::sse_decode(deserializer);
+        let mut var_settable = <bool>::sse_decode(deserializer);
         return crate::api::battery::PortInfo {
             id: var_id,
             label: var_label,
             direction: var_direction,
             on: var_on_,
             watts: var_watts,
+            settable: var_settable,
         };
     }
 }
@@ -857,12 +906,171 @@ impl SseDecode for crate::api::battery::Sensor {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_id = <String>::sse_decode(deserializer);
         let mut var_label = <Option<String>>::sse_decode(deserializer);
-        let mut var_celsius = <f32>::sse_decode(deserializer);
+        let mut var_value = <f64>::sse_decode(deserializer);
+        let mut var_unit = <crate::api::battery::SensorUnit>::sse_decode(deserializer);
         return crate::api::battery::Sensor {
             id: var_id,
             label: var_label,
-            celsius: var_celsius,
+            value: var_value,
+            unit: var_unit,
         };
+    }
+}
+
+impl SseDecode for crate::api::battery::SensorUnit {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::battery::SensorUnit::Percent,
+            1 => crate::api::battery::SensorUnit::Volt,
+            2 => crate::api::battery::SensorUnit::Amp,
+            3 => crate::api::battery::SensorUnit::Watt,
+            4 => crate::api::battery::SensorUnit::Celsius,
+            5 => crate::api::battery::SensorUnit::AmpHour,
+            6 => crate::api::battery::SensorUnit::Hour,
+            7 => crate::api::battery::SensorUnit::Second,
+            8 => crate::api::battery::SensorUnit::Count,
+            _ => unreachable!("Invalid variant for SensorUnit: {}", inner),
+        };
+    }
+}
+
+impl SseDecode for crate::api::battery::Setting {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_id = <String>::sse_decode(deserializer);
+        let mut var_label = <Option<String>>::sse_decode(deserializer);
+        let mut var_value = <crate::api::battery::SettingValue>::sse_decode(deserializer);
+        let mut var_kind = <crate::api::battery::SettingKind>::sse_decode(deserializer);
+        let mut var_writable = <bool>::sse_decode(deserializer);
+        return crate::api::battery::Setting {
+            id: var_id,
+            label: var_label,
+            value: var_value,
+            kind: var_kind,
+            writable: var_writable,
+        };
+    }
+}
+
+impl SseDecode for crate::api::battery::SettingKind {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut tag_ = <i32>::sse_decode(deserializer);
+        match tag_ {
+            0 => {
+                return crate::api::battery::SettingKind::Bool;
+            }
+            1 => {
+                let mut var_min = <Option<f64>>::sse_decode(deserializer);
+                let mut var_max = <Option<f64>>::sse_decode(deserializer);
+                let mut var_step = <Option<f64>>::sse_decode(deserializer);
+                let mut var_unit = <String>::sse_decode(deserializer);
+                return crate::api::battery::SettingKind::Number {
+                    min: var_min,
+                    max: var_max,
+                    step: var_step,
+                    unit: var_unit,
+                };
+            }
+            2 => {
+                let mut var_options = <Vec<String>>::sse_decode(deserializer);
+                return crate::api::battery::SettingKind::Enum {
+                    options: var_options,
+                };
+            }
+            3 => {
+                return crate::api::battery::SettingKind::Text;
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
+impl SseDecode for crate::api::battery::SettingValue {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut tag_ = <i32>::sse_decode(deserializer);
+        match tag_ {
+            0 => {
+                let mut var_field0 = <bool>::sse_decode(deserializer);
+                return crate::api::battery::SettingValue::Bool(var_field0);
+            }
+            1 => {
+                let mut var_field0 = <f64>::sse_decode(deserializer);
+                return crate::api::battery::SettingValue::Number(var_field0);
+            }
+            2 => {
+                let mut var_field0 = <String>::sse_decode(deserializer);
+                return crate::api::battery::SettingValue::Text(var_field0);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
+impl SseDecode for crate::api::battery::StatusUpdate {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut tag_ = <i32>::sse_decode(deserializer);
+        match tag_ {
+            0 => {
+                let mut var_field0 = <crate::api::battery::Sensor>::sse_decode(deserializer);
+                return crate::api::battery::StatusUpdate::Sensor(var_field0);
+            }
+            1 => {
+                let mut var_field0 = <crate::api::battery::Switch>::sse_decode(deserializer);
+                return crate::api::battery::StatusUpdate::Switch(var_field0);
+            }
+            2 => {
+                let mut var_field0 = <crate::api::battery::PortInfo>::sse_decode(deserializer);
+                return crate::api::battery::StatusUpdate::Port(var_field0);
+            }
+            3 => {
+                let mut var_field0 = <crate::api::battery::CellInfo>::sse_decode(deserializer);
+                return crate::api::battery::StatusUpdate::Cell(var_field0);
+            }
+            4 => {
+                let mut var_field0 = <crate::api::battery::Setting>::sse_decode(deserializer);
+                return crate::api::battery::StatusUpdate::Setting(var_field0);
+            }
+            5 => {
+                let mut var_field0 = <Vec<String>>::sse_decode(deserializer);
+                return crate::api::battery::StatusUpdate::Alarms(var_field0);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
+impl SseDecode for crate::api::battery::StreamEvent {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut tag_ = <i32>::sse_decode(deserializer);
+        match tag_ {
+            0 => {
+                let mut var_field0 = <crate::api::battery::BatteryStatus>::sse_decode(deserializer);
+                return crate::api::battery::StreamEvent::Snapshot(var_field0);
+            }
+            1 => {
+                let mut var_field0 = <crate::api::battery::StatusUpdate>::sse_decode(deserializer);
+                return crate::api::battery::StreamEvent::Update(var_field0);
+            }
+            2 => {
+                let mut var_field0 = <String>::sse_decode(deserializer);
+                return crate::api::battery::StreamEvent::Error(var_field0);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
     }
 }
 
@@ -877,13 +1085,6 @@ impl SseDecode for crate::api::battery::Switch {
             label: var_label,
             on: var_on_,
         };
-    }
-}
-
-impl SseDecode for u32 {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        deserializer.cursor.read_u32::<NativeEndian>().unwrap()
     }
 }
 
@@ -923,11 +1124,11 @@ fn pde_ffi_dispatcher_primary_impl(
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
         3 => wire__crate__api__battery__BatteryConn_set_impl(port, ptr, rust_vec_len, data_len),
-        4 => wire__crate__api__battery__BatteryConn_status_impl(port, ptr, rust_vec_len, data_len),
         5 => wire__crate__api__battery__BatteryConn_toggle_impl(port, ptr, rust_vec_len, data_len),
-        6 => wire__crate__api__battery__connect_impl(port, ptr, rust_vec_len, data_len),
-        7 => wire__crate__api__battery__discover_devices_impl(port, ptr, rust_vec_len, data_len),
-        9 => wire__crate__api__init__init_app_impl(port, ptr, rust_vec_len, data_len),
+        6 => wire__crate__api__battery__BatteryConn_watch_impl(port, ptr, rust_vec_len, data_len),
+        7 => wire__crate__api__battery__connect_impl(port, ptr, rust_vec_len, data_len),
+        8 => wire__crate__api__battery__discover_devices_impl(port, ptr, rust_vec_len, data_len),
+        10 => wire__crate__api__init__init_app_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -942,7 +1143,8 @@ fn pde_ffi_dispatcher_sync_impl(
     match func_id {
         1 => wire__crate__api__battery__BatteryConn_capabilities_impl(ptr, rust_vec_len, data_len),
         2 => wire__crate__api__battery__BatteryConn_info_impl(ptr, rust_vec_len, data_len),
-        8 => wire__crate__api__battery__has_serial_support_impl(ptr, rust_vec_len, data_len),
+        4 => wire__crate__api__battery__BatteryConn_status_impl(ptr, rust_vec_len, data_len),
+        9 => wire__crate__api__battery__has_serial_support_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -968,29 +1170,12 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<BatteryConn>> for BatteryConn 
 impl flutter_rust_bridge::IntoDart for crate::api::battery::BatteryStatus {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
-            self.soc.into_into_dart().into_dart(),
-            self.soh.into_into_dart().into_dart(),
-            self.voltage.into_into_dart().into_dart(),
-            self.current.into_into_dart().into_dart(),
-            self.power_in.into_into_dart().into_dart(),
-            self.power_out.into_into_dart().into_dart(),
-            self.temperatures.into_into_dart().into_dart(),
-            self.time_remaining_h.into_into_dart().into_dart(),
-            self.capacity_remaining_ah.into_into_dart().into_dart(),
-            self.capacity_full_ah.into_into_dart().into_dart(),
-            self.cycles.into_into_dart().into_dart(),
-            self.charging.into_into_dart().into_dart(),
-            self.discharging.into_into_dart().into_dart(),
+            self.sensors.into_into_dart().into_dart(),
             self.switches.into_into_dart().into_dart(),
-            self.charge_current_limit_a.into_into_dart().into_dart(),
-            self.discharge_current_limit_a.into_into_dart().into_dart(),
-            self.soc_limit_max.into_into_dart().into_dart(),
-            self.soc_limit_min.into_into_dart().into_dart(),
-            self.cells.into_into_dart().into_dart(),
             self.ports.into_into_dart().into_dart(),
+            self.cells.into_into_dart().into_dart(),
+            self.settings.into_into_dart().into_dart(),
             self.alarms.into_into_dart().into_dart(),
-            self.temperature_c.into_into_dart().into_dart(),
-            self.cell_delta.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -1016,7 +1201,6 @@ impl flutter_rust_bridge::IntoDart for crate::api::battery::Caps {
             self.read_temperature.into_into_dart().into_dart(),
             self.read_limits.into_into_dart().into_dart(),
             self.read_alarms.into_into_dart().into_dart(),
-            self.toggle_ports.into_into_dart().into_dart(),
             self.toggle_charge.into_into_dart().into_dart(),
             self.toggle_discharge.into_into_dart().into_dart(),
             self.toggle_balancer.into_into_dart().into_dart(),
@@ -1152,6 +1336,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::battery::PortInfo {
             self.direction.into_into_dart().into_dart(),
             self.on.into_into_dart().into_dart(),
             self.watts.into_into_dart().into_dart(),
+            self.settable.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -1170,7 +1355,8 @@ impl flutter_rust_bridge::IntoDart for crate::api::battery::Sensor {
         [
             self.id.into_into_dart().into_dart(),
             self.label.into_into_dart().into_dart(),
-            self.celsius.into_into_dart().into_dart(),
+            self.value.into_into_dart().into_dart(),
+            self.unit.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -1180,6 +1366,193 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::battery::Sensor>
     for crate::api::battery::Sensor
 {
     fn into_into_dart(self) -> crate::api::battery::Sensor {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::battery::SensorUnit {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Percent => 0.into_dart(),
+            Self::Volt => 1.into_dart(),
+            Self::Amp => 2.into_dart(),
+            Self::Watt => 3.into_dart(),
+            Self::Celsius => 4.into_dart(),
+            Self::AmpHour => 5.into_dart(),
+            Self::Hour => 6.into_dart(),
+            Self::Second => 7.into_dart(),
+            Self::Count => 8.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::battery::SensorUnit
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::battery::SensorUnit>
+    for crate::api::battery::SensorUnit
+{
+    fn into_into_dart(self) -> crate::api::battery::SensorUnit {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::battery::Setting {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.id.into_into_dart().into_dart(),
+            self.label.into_into_dart().into_dart(),
+            self.value.into_into_dart().into_dart(),
+            self.kind.into_into_dart().into_dart(),
+            self.writable.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::battery::Setting {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::battery::Setting>
+    for crate::api::battery::Setting
+{
+    fn into_into_dart(self) -> crate::api::battery::Setting {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::battery::SettingKind {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            crate::api::battery::SettingKind::Bool => [0.into_dart()].into_dart(),
+            crate::api::battery::SettingKind::Number {
+                min,
+                max,
+                step,
+                unit,
+            } => [
+                1.into_dart(),
+                min.into_into_dart().into_dart(),
+                max.into_into_dart().into_dart(),
+                step.into_into_dart().into_dart(),
+                unit.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            crate::api::battery::SettingKind::Enum { options } => {
+                [2.into_dart(), options.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::battery::SettingKind::Text => [3.into_dart()].into_dart(),
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::battery::SettingKind
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::battery::SettingKind>
+    for crate::api::battery::SettingKind
+{
+    fn into_into_dart(self) -> crate::api::battery::SettingKind {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::battery::SettingValue {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            crate::api::battery::SettingValue::Bool(field0) => {
+                [0.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::battery::SettingValue::Number(field0) => {
+                [1.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::battery::SettingValue::Text(field0) => {
+                [2.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::battery::SettingValue
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::battery::SettingValue>
+    for crate::api::battery::SettingValue
+{
+    fn into_into_dart(self) -> crate::api::battery::SettingValue {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::battery::StatusUpdate {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            crate::api::battery::StatusUpdate::Sensor(field0) => {
+                [0.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::battery::StatusUpdate::Switch(field0) => {
+                [1.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::battery::StatusUpdate::Port(field0) => {
+                [2.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::battery::StatusUpdate::Cell(field0) => {
+                [3.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::battery::StatusUpdate::Setting(field0) => {
+                [4.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::battery::StatusUpdate::Alarms(field0) => {
+                [5.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::battery::StatusUpdate
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::battery::StatusUpdate>
+    for crate::api::battery::StatusUpdate
+{
+    fn into_into_dart(self) -> crate::api::battery::StatusUpdate {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::battery::StreamEvent {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            crate::api::battery::StreamEvent::Snapshot(field0) => {
+                [0.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::battery::StreamEvent::Update(field0) => {
+                [1.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::battery::StreamEvent::Error(field0) => {
+                [2.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::battery::StreamEvent
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::battery::StreamEvent>
+    for crate::api::battery::StreamEvent
+{
+    fn into_into_dart(self) -> crate::api::battery::StreamEvent {
         self
     }
 }
@@ -1228,6 +1601,15 @@ impl SseEncode
     }
 }
 
+impl SseEncode
+    for StreamSink<crate::api::battery::StreamEvent, flutter_rust_bridge::for_generated::SseCodec>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        unimplemented!("")
+    }
+}
+
 impl SseEncode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1238,29 +1620,12 @@ impl SseEncode for String {
 impl SseEncode for crate::api::battery::BatteryStatus {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <Option<f32>>::sse_encode(self.soc, serializer);
-        <Option<f32>>::sse_encode(self.soh, serializer);
-        <Option<f32>>::sse_encode(self.voltage, serializer);
-        <Option<f32>>::sse_encode(self.current, serializer);
-        <Option<f32>>::sse_encode(self.power_in, serializer);
-        <Option<f32>>::sse_encode(self.power_out, serializer);
-        <Vec<crate::api::battery::Sensor>>::sse_encode(self.temperatures, serializer);
-        <Option<f32>>::sse_encode(self.time_remaining_h, serializer);
-        <Option<f32>>::sse_encode(self.capacity_remaining_ah, serializer);
-        <Option<f32>>::sse_encode(self.capacity_full_ah, serializer);
-        <Option<u32>>::sse_encode(self.cycles, serializer);
-        <Option<bool>>::sse_encode(self.charging, serializer);
-        <Option<bool>>::sse_encode(self.discharging, serializer);
+        <Vec<crate::api::battery::Sensor>>::sse_encode(self.sensors, serializer);
         <Vec<crate::api::battery::Switch>>::sse_encode(self.switches, serializer);
-        <Option<f32>>::sse_encode(self.charge_current_limit_a, serializer);
-        <Option<f32>>::sse_encode(self.discharge_current_limit_a, serializer);
-        <Option<f32>>::sse_encode(self.soc_limit_max, serializer);
-        <Option<f32>>::sse_encode(self.soc_limit_min, serializer);
-        <Vec<crate::api::battery::CellInfo>>::sse_encode(self.cells, serializer);
         <Vec<crate::api::battery::PortInfo>>::sse_encode(self.ports, serializer);
+        <Vec<crate::api::battery::CellInfo>>::sse_encode(self.cells, serializer);
+        <Vec<crate::api::battery::Setting>>::sse_encode(self.settings, serializer);
         <Vec<String>>::sse_encode(self.alarms, serializer);
-        <Option<f32>>::sse_encode(self.temperature_c, serializer);
-        <Option<f32>>::sse_encode(self.cell_delta, serializer);
     }
 }
 
@@ -1280,7 +1645,6 @@ impl SseEncode for crate::api::battery::Caps {
         <bool>::sse_encode(self.read_temperature, serializer);
         <bool>::sse_encode(self.read_limits, serializer);
         <bool>::sse_encode(self.read_alarms, serializer);
-        <bool>::sse_encode(self.toggle_ports, serializer);
         <bool>::sse_encode(self.toggle_charge, serializer);
         <bool>::sse_encode(self.toggle_discharge, serializer);
         <bool>::sse_encode(self.toggle_balancer, serializer);
@@ -1341,6 +1705,13 @@ impl SseEncode for f32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         serializer.cursor.write_f32::<NativeEndian>(self).unwrap();
+    }
+}
+
+impl SseEncode for f64 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_f64::<NativeEndian>(self).unwrap();
     }
 }
 
@@ -1411,6 +1782,16 @@ impl SseEncode for Vec<crate::api::battery::Sensor> {
     }
 }
 
+impl SseEncode for Vec<crate::api::battery::Setting> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::battery::Setting>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::battery::Switch> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1451,22 +1832,22 @@ impl SseEncode for Option<f32> {
     }
 }
 
+impl SseEncode for Option<f64> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <f64>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for Option<crate::api::battery::PortDirection> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <crate::api::battery::PortDirection>::sse_encode(value, serializer);
-        }
-    }
-}
-
-impl SseEncode for Option<u32> {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <bool>::sse_encode(self.is_some(), serializer);
-        if let Some(value) = self {
-            <u32>::sse_encode(value, serializer);
         }
     }
 }
@@ -1496,6 +1877,7 @@ impl SseEncode for crate::api::battery::PortInfo {
         <Option<crate::api::battery::PortDirection>>::sse_encode(self.direction, serializer);
         <Option<bool>>::sse_encode(self.on, serializer);
         <Option<f32>>::sse_encode(self.watts, serializer);
+        <bool>::sse_encode(self.settable, serializer);
     }
 }
 
@@ -1504,7 +1886,156 @@ impl SseEncode for crate::api::battery::Sensor {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <String>::sse_encode(self.id, serializer);
         <Option<String>>::sse_encode(self.label, serializer);
-        <f32>::sse_encode(self.celsius, serializer);
+        <f64>::sse_encode(self.value, serializer);
+        <crate::api::battery::SensorUnit>::sse_encode(self.unit, serializer);
+    }
+}
+
+impl SseEncode for crate::api::battery::SensorUnit {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::battery::SensorUnit::Percent => 0,
+                crate::api::battery::SensorUnit::Volt => 1,
+                crate::api::battery::SensorUnit::Amp => 2,
+                crate::api::battery::SensorUnit::Watt => 3,
+                crate::api::battery::SensorUnit::Celsius => 4,
+                crate::api::battery::SensorUnit::AmpHour => 5,
+                crate::api::battery::SensorUnit::Hour => 6,
+                crate::api::battery::SensorUnit::Second => 7,
+                crate::api::battery::SensorUnit::Count => 8,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for crate::api::battery::Setting {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.id, serializer);
+        <Option<String>>::sse_encode(self.label, serializer);
+        <crate::api::battery::SettingValue>::sse_encode(self.value, serializer);
+        <crate::api::battery::SettingKind>::sse_encode(self.kind, serializer);
+        <bool>::sse_encode(self.writable, serializer);
+    }
+}
+
+impl SseEncode for crate::api::battery::SettingKind {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        match self {
+            crate::api::battery::SettingKind::Bool => {
+                <i32>::sse_encode(0, serializer);
+            }
+            crate::api::battery::SettingKind::Number {
+                min,
+                max,
+                step,
+                unit,
+            } => {
+                <i32>::sse_encode(1, serializer);
+                <Option<f64>>::sse_encode(min, serializer);
+                <Option<f64>>::sse_encode(max, serializer);
+                <Option<f64>>::sse_encode(step, serializer);
+                <String>::sse_encode(unit, serializer);
+            }
+            crate::api::battery::SettingKind::Enum { options } => {
+                <i32>::sse_encode(2, serializer);
+                <Vec<String>>::sse_encode(options, serializer);
+            }
+            crate::api::battery::SettingKind::Text => {
+                <i32>::sse_encode(3, serializer);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
+impl SseEncode for crate::api::battery::SettingValue {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        match self {
+            crate::api::battery::SettingValue::Bool(field0) => {
+                <i32>::sse_encode(0, serializer);
+                <bool>::sse_encode(field0, serializer);
+            }
+            crate::api::battery::SettingValue::Number(field0) => {
+                <i32>::sse_encode(1, serializer);
+                <f64>::sse_encode(field0, serializer);
+            }
+            crate::api::battery::SettingValue::Text(field0) => {
+                <i32>::sse_encode(2, serializer);
+                <String>::sse_encode(field0, serializer);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
+impl SseEncode for crate::api::battery::StatusUpdate {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        match self {
+            crate::api::battery::StatusUpdate::Sensor(field0) => {
+                <i32>::sse_encode(0, serializer);
+                <crate::api::battery::Sensor>::sse_encode(field0, serializer);
+            }
+            crate::api::battery::StatusUpdate::Switch(field0) => {
+                <i32>::sse_encode(1, serializer);
+                <crate::api::battery::Switch>::sse_encode(field0, serializer);
+            }
+            crate::api::battery::StatusUpdate::Port(field0) => {
+                <i32>::sse_encode(2, serializer);
+                <crate::api::battery::PortInfo>::sse_encode(field0, serializer);
+            }
+            crate::api::battery::StatusUpdate::Cell(field0) => {
+                <i32>::sse_encode(3, serializer);
+                <crate::api::battery::CellInfo>::sse_encode(field0, serializer);
+            }
+            crate::api::battery::StatusUpdate::Setting(field0) => {
+                <i32>::sse_encode(4, serializer);
+                <crate::api::battery::Setting>::sse_encode(field0, serializer);
+            }
+            crate::api::battery::StatusUpdate::Alarms(field0) => {
+                <i32>::sse_encode(5, serializer);
+                <Vec<String>>::sse_encode(field0, serializer);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
+impl SseEncode for crate::api::battery::StreamEvent {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        match self {
+            crate::api::battery::StreamEvent::Snapshot(field0) => {
+                <i32>::sse_encode(0, serializer);
+                <crate::api::battery::BatteryStatus>::sse_encode(field0, serializer);
+            }
+            crate::api::battery::StreamEvent::Update(field0) => {
+                <i32>::sse_encode(1, serializer);
+                <crate::api::battery::StatusUpdate>::sse_encode(field0, serializer);
+            }
+            crate::api::battery::StreamEvent::Error(field0) => {
+                <i32>::sse_encode(2, serializer);
+                <String>::sse_encode(field0, serializer);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
     }
 }
 
@@ -1514,13 +2045,6 @@ impl SseEncode for crate::api::battery::Switch {
         <String>::sse_encode(self.id, serializer);
         <Option<String>>::sse_encode(self.label, serializer);
         <bool>::sse_encode(self.on, serializer);
-    }
-}
-
-impl SseEncode for u32 {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        serializer.cursor.write_u32::<NativeEndian>(self).unwrap();
     }
 }
 

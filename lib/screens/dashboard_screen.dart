@@ -1,10 +1,79 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+// `Switch` is both a Flutter widget and one of our Rust model types; we use the
+// model type here (and SwitchListTile for UI), so hide the widget.
+import 'package:flutter/material.dart' hide Switch;
 import 'package:battery_app/src/rust/api/battery.dart';
 
-/// Live dashboard for one connected battery. Polls `status()` periodically
-/// and gates controls on the device's capabilities.
+/// Mutable, incrementally-updated view of device state, driven by the Rust
+/// `StreamEvent`s (a full Snapshot then individual Updates).
+class LiveStatus {
+  final Map<String, Sensor> sensors = {};
+  final Map<String, Switch> switches = {};
+  final Map<String, PortInfo> ports = {};
+  final Map<int, CellInfo> cells = {};
+  final Map<String, Setting> settings = {};
+  List<String> alarms = [];
+
+  void applySnapshot(BatteryStatus s) {
+    sensors
+      ..clear()
+      ..addEntries(s.sensors.map((x) => MapEntry(x.id, x)));
+    switches
+      ..clear()
+      ..addEntries(s.switches.map((x) => MapEntry(x.id, x)));
+    ports
+      ..clear()
+      ..addEntries(s.ports.map((x) => MapEntry(x.id, x)));
+    cells
+      ..clear()
+      ..addEntries(s.cells.map((x) => MapEntry(x.index, x)));
+    settings
+      ..clear()
+      ..addEntries(s.settings.map((x) => MapEntry(x.id, x)));
+    alarms = List.of(s.alarms);
+  }
+
+  void applyUpdate(StatusUpdate u) {
+    switch (u) {
+      case StatusUpdate_Sensor(:final field0):
+        sensors[field0.id] = field0;
+      case StatusUpdate_Switch(:final field0):
+        switches[field0.id] = field0;
+      case StatusUpdate_Port(:final field0):
+        ports[field0.id] = field0;
+      case StatusUpdate_Cell(:final field0):
+        cells[field0.index] = field0;
+      case StatusUpdate_Setting(:final field0):
+        settings[field0.id] = field0;
+      case StatusUpdate_Alarms(:final field0):
+        alarms = field0;
+    }
+  }
+
+  double? reading(String id) => sensors[id]?.value;
+}
+
+String unitSymbol(SensorUnit u) => switch (u) {
+      SensorUnit.percent => '%',
+      SensorUnit.volt => 'V',
+      SensorUnit.amp => 'A',
+      SensorUnit.watt => 'W',
+      SensorUnit.celsius => '°C',
+      SensorUnit.ampHour => 'Ah',
+      SensorUnit.hour => 'h',
+      SensorUnit.second => 's',
+      SensorUnit.count => '',
+    };
+
+String prettyId(String id) {
+  var s = id.replaceAll(RegExp(r'[_.]'), ' ');
+  return s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';
+}
+
+String fmtNum(double v) =>
+    v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(2);
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key, required this.device, required this.conn});
 
@@ -16,128 +85,190 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  BatteryStatus? _status;
+  final LiveStatus _live = LiveStatus();
+  bool _seeded = false;
   String? _error;
-  Timer? _timer;
+  StreamSubscription<StreamEvent>? _sub;
   bool _busy = false;
   late final Caps _caps = widget.conn.capabilities();
+
+  /// Optimistic overrides for switch/port ids, cleared once the live state
+  /// reports the same value.
+  final Map<String, bool> _pending = {};
 
   @override
   void initState() {
     super.initState();
-    _refresh();
-    _timer = Timer.periodic(const Duration(seconds: 5), (_) => _refresh());
+    _sub = widget.conn.watch().listen(
+      _onEvent,
+      onError: (e) {
+        if (mounted) setState(() => _error = '$e');
+      },
+    );
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _sub?.cancel();
     widget.conn.dispose();
     super.dispose();
   }
 
-  Future<void> _refresh() async {
-    if (_busy) return;
-    try {
-      final s = await widget.conn.status();
-      if (mounted) {
-        setState(() {
-          _status = s;
+  void _onEvent(StreamEvent event) {
+    if (!mounted) return;
+    setState(() {
+      switch (event) {
+        case StreamEvent_Snapshot(:final field0):
+          _live.applySnapshot(field0);
+          _seeded = true;
           _error = null;
-        });
+        case StreamEvent_Update(:final field0):
+          _live.applyUpdate(field0);
+          _error = null;
+        case StreamEvent_Error(:final field0):
+          _error = field0;
       }
-    } catch (e) {
-      if (mounted) setState(() => _error = '$e');
-    }
+      // Drop optimistic overrides the device has caught up to.
+      _pending.removeWhere((id, want) => _liveBool(id) == want);
+    });
   }
 
+  /// Current device-reported bool for a switch or port id.
+  bool? _liveBool(String id) =>
+      _live.switches[id]?.on_ ?? _live.ports[id]?.on_;
+
+  bool? _effective(String id) => _pending[id] ?? _liveBool(id);
+
   Future<void> _toggle(String id, bool on) async {
-    setState(() => _busy = true);
+    setState(() {
+      _pending[id] = on;
+      _busy = true;
+    });
     try {
       await widget.conn.toggle(id: id, on_: on);
-      _busy = false;
-      await _refresh();
     } catch (e) {
       if (mounted) {
+        setState(() => _pending.remove(id));
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('Command failed: $e')));
       }
     } finally {
-      _busy = false;
+      if (mounted) setState(() => _busy = false);
     }
+  }
+
+  Future<void> _set(String id, String value) async {
+    setState(() => _busy = true);
+    try {
+      await widget.conn.set_(id: id, value: value);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Set failed: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Whether this switch is toggleable *at all* (capability-based). While a
+  /// command is in flight the tile stays a switch — merely disabled — so the
+  /// row doesn't visually flip to the read-only badge on every tap.
+  bool _canToggleSwitch(String id) {
+    return switch (id) {
+      'charging' => _caps.toggleCharge,
+      'discharging' => _caps.toggleDischarge,
+      'balancer' => _caps.toggleBalancer,
+      _ => _caps.writeSettings,
+    };
   }
 
   @override
   Widget build(BuildContext context) {
-    final s = _status;
+    if (!_seeded) {
+      return Scaffold(
+        appBar: AppBar(title: Text(widget.device.label)),
+        body: Center(
+          child: _error != null
+              ? Text(_error!)
+              : const CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    // Order sensors: soc first is handled by the gauge; the rest go in a card.
+    final otherSensors =
+        _live.sensors.values.where((s) => s.id != 'soc').toList();
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.device.label),
-        actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: _refresh),
-        ],
-      ),
-      body: s == null
-          ? Center(
-              child: _error != null
-                  ? Text(_error!)
-                  : const CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _refresh,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  if (_error != null)
-                    Card(
-                      color: Theme.of(context).colorScheme.errorContainer,
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Text('Last poll failed: $_error'),
-                      ),
-                    ),
-                  _SocCard(status: s),
-                  const SizedBox(height: 12),
-                  _StatsCard(status: s),
-                  if (s.alarms.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    _AlarmsCard(alarms: s.alarms),
-                  ],
-                  if (s.ports.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    _PortsCard(
-                      ports: s.ports,
-                      canToggle: _caps.togglePorts && !_busy,
-                      onToggle: _toggle,
-                    ),
-                  ],
-                  if (s.charging != null || s.discharging != null) ...[
-                    const SizedBox(height: 12),
-                    _MosfetCard(
-                      status: s,
-                      caps: _caps,
-                      busy: _busy,
-                      onToggle: _toggle,
-                    ),
-                  ],
-                  if (s.cells.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    _CellsCard(status: s),
-                  ],
-                ],
+      appBar: AppBar(title: Text(widget.device.label)),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          if (_error != null)
+            Card(
+              color: Theme.of(context).colorScheme.errorContainer,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text('Last event error: $_error'),
               ),
             ),
+          _SocCard(live: _live),
+          if (otherSensors.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _ReadingsCard(sensors: otherSensors),
+          ],
+          if (_live.alarms.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _AlarmsCard(alarms: _live.alarms),
+          ],
+          if (_live.ports.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _PortsCard(
+              ports: _live.ports.values.toList(),
+              busy: _busy,
+              effective: _effective,
+              onToggle: _toggle,
+            ),
+          ],
+          if (_live.switches.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _SwitchesCard(
+              switches: _live.switches.values.toList(),
+              busy: _busy,
+              effective: _effective,
+              canToggle: _canToggleSwitch,
+              onToggle: _toggle,
+            ),
+          ],
+          if (_live.settings.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _SettingsCard(
+              settings: _live.settings.values.toList(),
+              busy: _busy,
+              onToggle: _toggle,
+              onSet: _set,
+            ),
+          ],
+          if (_live.cells.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _CellsCard(cells: _live.cells.values.toList()),
+          ],
+        ],
+      ),
     );
   }
 }
 
 class _SocCard extends StatelessWidget {
-  const _SocCard({required this.status});
-  final BatteryStatus status;
+  const _SocCard({required this.live});
+  final LiveStatus live;
 
   @override
   Widget build(BuildContext context) {
-    final soc = status.soc;
-    final charging = (status.current ?? 0) > 0;
+    final soc = live.reading('soc');
+    final current = live.reading('current') ?? 0;
+    final timeH = live.reading('time_remaining_h');
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -152,9 +283,12 @@ class _SocCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: LinearProgressIndicator(value: soc / 100, minHeight: 8),
               ),
-            Text(charging ? 'Charging' : 'Discharging / idle'),
-            if (status.timeRemainingH != null)
-              Text('~${status.timeRemainingH!.toStringAsFixed(1)} h remaining'),
+            Text(current > 0
+                ? 'Charging'
+                : current < 0
+                    ? 'Discharging'
+                    : 'Idle'),
+            if (timeH != null) Text('~${timeH.toStringAsFixed(1)} h remaining'),
           ],
         ),
       ),
@@ -162,43 +296,28 @@ class _SocCard extends StatelessWidget {
   }
 }
 
-class _StatsCard extends StatelessWidget {
-  const _StatsCard({required this.status});
-  final BatteryStatus status;
+class _ReadingsCard extends StatelessWidget {
+  const _ReadingsCard({required this.sensors});
+  final List<Sensor> sensors;
 
   @override
   Widget build(BuildContext context) {
-    String fmt(double? v, String unit, [int dp = 1]) =>
-        v != null ? '${v.toStringAsFixed(dp)} $unit' : '—';
-    final rows = <(String, String)>[
-      ('Voltage', fmt(status.voltage, 'V', 2)),
-      ('Current', fmt(status.current, 'A', 2)),
-      if (status.powerIn != null) ('Power in', fmt(status.powerIn, 'W', 0)),
-      if (status.powerOut != null) ('Power out', fmt(status.powerOut, 'W', 0)),
-      if (status.temperatureC != null)
-        ('Temperature', fmt(status.temperatureC, '°C')),
-      if (status.capacityRemainingAh != null)
-        (
-          'Capacity',
-          '${fmt(status.capacityRemainingAh, '', 1)}/ ${fmt(status.capacityFullAh, 'Ah', 1)}'
-        ),
-      if (status.cycles != null) ('Cycles', '${status.cycles}'),
-      if (status.soh != null) ('Health', fmt(status.soh, '%', 0)),
-    ];
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            for (final (label, value) in rows)
+            for (final s in sensors)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(label),
-                    Text(value,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(s.label ?? prettyId(s.id)),
+                    Text(
+                      '${fmtNum(s.value)}${unitSymbol(s.unit).isEmpty ? '' : ' ${unitSymbol(s.unit)}'}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ],
                 ),
               ),
@@ -238,11 +357,13 @@ class _AlarmsCard extends StatelessWidget {
 class _PortsCard extends StatelessWidget {
   const _PortsCard({
     required this.ports,
-    required this.canToggle,
+    required this.busy,
+    required this.effective,
     required this.onToggle,
   });
   final List<PortInfo> ports;
-  final bool canToggle;
+  final bool busy;
+  final bool? Function(String id) effective;
   final void Function(String id, bool on) onToggle;
 
   @override
@@ -251,34 +372,71 @@ class _PortsCard extends StatelessWidget {
       child: Column(
         children: [
           const ListTile(
-              title: Text('Ports',
-                  style: TextStyle(fontWeight: FontWeight.bold))),
+              title:
+                  Text('Ports', style: TextStyle(fontWeight: FontWeight.bold))),
           for (final p in ports)
-            SwitchListTile(
-              title: Text(p.label ?? p.id),
-              subtitle:
-                  p.watts != null ? Text('${p.watts!.toStringAsFixed(0)} W') : null,
-              value: p.on_ ?? false,
-              onChanged: canToggle && p.on_ != null
-                  ? (v) => onToggle(p.id, v)
-                  : null,
-            ),
+            if (p.settable && p.on_ != null)
+              SwitchListTile(
+                title: Text(p.label ?? prettyId(p.id)),
+                subtitle: p.watts != null
+                    ? Text('${p.watts!.toStringAsFixed(0)} W')
+                    : null,
+                value: effective(p.id) ?? false,
+                onChanged: busy ? null : (v) => onToggle(p.id, v),
+              )
+            else
+              ListTile(
+                title: Text(p.label ?? prettyId(p.id)),
+                subtitle: p.watts != null
+                    ? Text('${p.watts!.toStringAsFixed(0)} W')
+                    : null,
+                trailing: _OnOffBadge(on: effective(p.id)),
+              ),
         ],
       ),
     );
   }
 }
 
-class _MosfetCard extends StatelessWidget {
-  const _MosfetCard({
-    required this.status,
-    required this.caps,
+/// Read-only ON/OFF indicator for ports/switches that can't be toggled.
+class _OnOffBadge extends StatelessWidget {
+  const _OnOffBadge({required this.on});
+  final bool? on;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final (label, fg, bg) = switch (on) {
+      true => ('ON', scheme.onPrimary, scheme.primary),
+      false => ('OFF', scheme.onSurfaceVariant, scheme.surfaceContainerHighest),
+      null => ('—', scheme.onSurfaceVariant, scheme.surfaceContainerHighest),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(color: fg, fontWeight: FontWeight.bold, fontSize: 12),
+      ),
+    );
+  }
+}
+
+class _SwitchesCard extends StatelessWidget {
+  const _SwitchesCard({
+    required this.switches,
     required this.busy,
+    required this.effective,
+    required this.canToggle,
     required this.onToggle,
   });
-  final BatteryStatus status;
-  final Caps caps;
+  final List<Switch> switches;
   final bool busy;
+  final bool? Function(String id) effective;
+  final bool Function(String id) canToggle;
   final void Function(String id, bool on) onToggle;
 
   @override
@@ -286,51 +444,152 @@ class _MosfetCard extends StatelessWidget {
     return Card(
       child: Column(
         children: [
-          if (status.charging != null)
-            SwitchListTile(
-              title: const Text('Charging MOSFET'),
-              value: status.charging!,
-              onChanged: caps.toggleCharge && !busy
-                  ? (v) => onToggle('charging', v)
-                  : null,
-            ),
-          if (status.discharging != null)
-            SwitchListTile(
-              title: const Text('Discharging MOSFET'),
-              value: status.discharging!,
-              onChanged: caps.toggleDischarge && !busy
-                  ? (v) => onToggle('discharging', v)
-                  : null,
-            ),
+          for (final w in switches)
+            if (canToggle(w.id))
+              SwitchListTile(
+                title: Text(w.label ?? prettyId(w.id)),
+                value: effective(w.id) ?? w.on_,
+                onChanged: busy ? null : (v) => onToggle(w.id, v),
+              )
+            else
+              ListTile(
+                title: Text(w.label ?? prettyId(w.id)),
+                trailing: _OnOffBadge(on: effective(w.id) ?? w.on_),
+              ),
         ],
       ),
     );
   }
 }
 
-class _CellsCard extends StatelessWidget {
-  const _CellsCard({required this.status});
-  final BatteryStatus status;
+class _SettingsCard extends StatelessWidget {
+  const _SettingsCard({
+    required this.settings,
+    required this.busy,
+    required this.onToggle,
+    required this.onSet,
+  });
+  final List<Setting> settings;
+  final bool busy;
+  final void Function(String id, bool on) onToggle;
+  final void Function(String id, String value) onSet;
 
   @override
   Widget build(BuildContext context) {
-    final delta = status.cellDelta;
+    return Card(
+      child: Column(
+        children: [
+          const ListTile(
+              title: Text('Settings',
+                  style: TextStyle(fontWeight: FontWeight.bold))),
+          for (final s in settings) _row(context, s),
+        ],
+      ),
+    );
+  }
+
+  Widget _row(BuildContext context, Setting s) {
+    final name = s.label ?? prettyId(s.id);
+    switch (s.value) {
+      case SettingValue_Bool(:final field0):
+        return SwitchListTile(
+          title: Text(name),
+          value: field0,
+          onChanged: s.writable && !busy ? (v) => onToggle(s.id, v) : null,
+        );
+      case SettingValue_Number(:final field0):
+        final unit = switch (s.kind) {
+          SettingKind_Number(:final unit) => unit,
+          _ => '',
+        };
+        return ListTile(
+          title: Text(name),
+          trailing: Text('${fmtNum(field0)}${unit.isEmpty ? '' : ' $unit'}'),
+          onTap: s.writable && !busy
+              ? () => _editNumber(context, s, field0)
+              : null,
+        );
+      case SettingValue_Text(:final field0):
+        return ListTile(
+          title: Text(name),
+          trailing: Text(field0),
+          onTap: s.writable && !busy
+              ? () => _editText(context, s, field0)
+              : null,
+        );
+    }
+  }
+
+  Future<void> _editNumber(
+      BuildContext context, Setting s, double current) async {
+    final controller = TextEditingController(text: fmtNum(current));
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.label ?? prettyId(s.id)),
+        content: TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, controller.text),
+              child: const Text('Set')),
+        ],
+      ),
+    );
+    if (result != null) onSet(s.id, result);
+  }
+
+  Future<void> _editText(BuildContext context, Setting s, String current) async {
+    final controller = TextEditingController(text: current);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(s.label ?? prettyId(s.id)),
+        content: TextField(controller: controller),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, controller.text),
+              child: const Text('Set')),
+        ],
+      ),
+    );
+    if (result != null) onSet(s.id, result);
+  }
+}
+
+class _CellsCard extends StatelessWidget {
+  const _CellsCard({required this.cells});
+  final List<CellInfo> cells;
+
+  @override
+  Widget build(BuildContext context) {
+    final volts = cells.map((c) => c.voltage).whereType<double>().toList();
+    final delta = volts.isEmpty
+        ? null
+        : (volts.reduce((a, b) => a > b ? a : b) -
+            volts.reduce((a, b) => a < b ? a : b));
+    final sorted = [...cells]..sort((a, b) => a.index.compareTo(b.index));
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Cells (${status.cells.length})',
+            Text('Cells (${cells.length})',
                 style: const TextStyle(fontWeight: FontWeight.bold)),
-            if (delta != null)
-              Text('Δ ${(delta * 1000).toStringAsFixed(0)} mV'),
+            if (delta != null) Text('Δ ${(delta * 1000).toStringAsFixed(0)} mV'),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                for (final c in status.cells)
+                for (final c in sorted)
                   Chip(
                     avatar: c.balancing == true
                         ? const Icon(Icons.sync, size: 16)

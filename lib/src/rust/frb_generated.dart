@@ -66,7 +66,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.12.0';
 
   @override
-  int get rustContentHash => -1878742325;
+  int get rustContentHash => 1173176299;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -88,14 +88,16 @@ abstract class RustLibApi extends BaseApi {
     required String value,
   });
 
-  Future<BatteryStatus> crateApiBatteryBatteryConnStatus({
-    required BatteryConn that,
-  });
+  BatteryStatus crateApiBatteryBatteryConnStatus({required BatteryConn that});
 
   Future<void> crateApiBatteryBatteryConnToggle({
     required BatteryConn that,
     required String id,
     required bool on_,
+  });
+
+  Stream<StreamEvent> crateApiBatteryBatteryConnWatch({
+    required BatteryConn that,
   });
 
   Future<BatteryConn> crateApiBatteryConnect({
@@ -225,27 +227,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<BatteryStatus> crateApiBatteryBatteryConnStatus({
-    required BatteryConn that,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+  BatteryStatus crateApiBatteryBatteryConnStatus({required BatteryConn that}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBatteryConn(
             that,
             serializer,
           );
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 4,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_battery_status,
-          decodeErrorData: sse_decode_AnyhowException,
+          decodeErrorData: null,
         ),
         constMeta: kCrateApiBatteryBatteryConnStatusConstMeta,
         argValues: [that],
@@ -298,6 +293,47 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Stream<StreamEvent> crateApiBatteryBatteryConnWatch({
+    required BatteryConn that,
+  }) {
+    final sink = RustStreamSink<StreamEvent>();
+    unawaited(
+      handler.executeNormal(
+        NormalTask(
+          callFfi: (port_) {
+            final serializer = SseSerializer(generalizedFrbRustBinding);
+            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBatteryConn(
+              that,
+              serializer,
+            );
+            sse_encode_StreamSink_stream_event_Sse(sink, serializer);
+            pdeCallFfi(
+              generalizedFrbRustBinding,
+              serializer,
+              funcId: 6,
+              port: port_,
+            );
+          },
+          codec: SseCodec(
+            decodeSuccessData: sse_decode_unit,
+            decodeErrorData: null,
+          ),
+          constMeta: kCrateApiBatteryBatteryConnWatchConstMeta,
+          argValues: [that, sink],
+          apiImpl: this,
+        ),
+      ),
+    );
+    return sink.stream;
+  }
+
+  TaskConstMeta get kCrateApiBatteryBatteryConnWatchConstMeta =>
+      const TaskConstMeta(
+        debugName: "BatteryConn_watch",
+        argNames: ["that", "sink"],
+      );
+
+  @override
   Future<BatteryConn> crateApiBatteryConnect({
     required String query,
     required BigInt bleSecs,
@@ -311,7 +347,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 6,
+            funcId: 7,
             port: port_,
           );
         },
@@ -344,7 +380,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 7,
+            funcId: 8,
             port: port_,
           );
         },
@@ -371,7 +407,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 8)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 9)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_bool,
@@ -396,7 +432,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 9,
+            funcId: 10,
             port: port_,
           );
         },
@@ -456,6 +492,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  RustStreamSink<StreamEvent> dco_decode_StreamSink_stream_event_Sse(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    throw UnimplementedError();
+  }
+
+  @protected
   String dco_decode_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as String;
@@ -465,32 +509,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   BatteryStatus dco_decode_battery_status(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 23)
-      throw Exception('unexpected arr length: expect 23 but see ${arr.length}');
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
     return BatteryStatus(
-      soc: dco_decode_opt_box_autoadd_f_32(arr[0]),
-      soh: dco_decode_opt_box_autoadd_f_32(arr[1]),
-      voltage: dco_decode_opt_box_autoadd_f_32(arr[2]),
-      current: dco_decode_opt_box_autoadd_f_32(arr[3]),
-      powerIn: dco_decode_opt_box_autoadd_f_32(arr[4]),
-      powerOut: dco_decode_opt_box_autoadd_f_32(arr[5]),
-      temperatures: dco_decode_list_sensor(arr[6]),
-      timeRemainingH: dco_decode_opt_box_autoadd_f_32(arr[7]),
-      capacityRemainingAh: dco_decode_opt_box_autoadd_f_32(arr[8]),
-      capacityFullAh: dco_decode_opt_box_autoadd_f_32(arr[9]),
-      cycles: dco_decode_opt_box_autoadd_u_32(arr[10]),
-      charging: dco_decode_opt_box_autoadd_bool(arr[11]),
-      discharging: dco_decode_opt_box_autoadd_bool(arr[12]),
-      switches: dco_decode_list_switch(arr[13]),
-      chargeCurrentLimitA: dco_decode_opt_box_autoadd_f_32(arr[14]),
-      dischargeCurrentLimitA: dco_decode_opt_box_autoadd_f_32(arr[15]),
-      socLimitMax: dco_decode_opt_box_autoadd_f_32(arr[16]),
-      socLimitMin: dco_decode_opt_box_autoadd_f_32(arr[17]),
-      cells: dco_decode_list_cell_info(arr[18]),
-      ports: dco_decode_list_port_info(arr[19]),
-      alarms: dco_decode_list_String(arr[20]),
-      temperatureC: dco_decode_opt_box_autoadd_f_32(arr[21]),
-      cellDelta: dco_decode_opt_box_autoadd_f_32(arr[22]),
+      sensors: dco_decode_list_sensor(arr[0]),
+      switches: dco_decode_list_switch(arr[1]),
+      ports: dco_decode_list_port_info(arr[2]),
+      cells: dco_decode_list_cell_info(arr[3]),
+      settings: dco_decode_list_setting(arr[4]),
+      alarms: dco_decode_list_String(arr[5]),
     );
   }
 
@@ -501,13 +528,31 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BatteryStatus dco_decode_box_autoadd_battery_status(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_battery_status(raw);
+  }
+
+  @protected
   bool dco_decode_box_autoadd_bool(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as bool;
   }
 
   @protected
+  CellInfo dco_decode_box_autoadd_cell_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_cell_info(raw);
+  }
+
+  @protected
   double dco_decode_box_autoadd_f_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as double;
+  }
+
+  @protected
+  double dco_decode_box_autoadd_f_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as double;
   }
@@ -519,17 +564,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  int dco_decode_box_autoadd_u_32(dynamic raw) {
+  PortInfo dco_decode_box_autoadd_port_info(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw as int;
+    return dco_decode_port_info(raw);
+  }
+
+  @protected
+  Sensor dco_decode_box_autoadd_sensor(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_sensor(raw);
+  }
+
+  @protected
+  Setting dco_decode_box_autoadd_setting(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_setting(raw);
+  }
+
+  @protected
+  StatusUpdate dco_decode_box_autoadd_status_update(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_status_update(raw);
+  }
+
+  @protected
+  Switch dco_decode_box_autoadd_switch(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_switch(raw);
   }
 
   @protected
   Caps dco_decode_caps(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 13)
-      throw Exception('unexpected arr length: expect 13 but see ${arr.length}');
+    if (arr.length != 12)
+      throw Exception('unexpected arr length: expect 12 but see ${arr.length}');
     return Caps(
       readBasic: dco_decode_bool(arr[0]),
       readCells: dco_decode_bool(arr[1]),
@@ -537,13 +606,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       readTemperature: dco_decode_bool(arr[3]),
       readLimits: dco_decode_bool(arr[4]),
       readAlarms: dco_decode_bool(arr[5]),
-      togglePorts: dco_decode_bool(arr[6]),
-      toggleCharge: dco_decode_bool(arr[7]),
-      toggleDischarge: dco_decode_bool(arr[8]),
-      toggleBalancer: dco_decode_bool(arr[9]),
-      setChargeLimit: dco_decode_bool(arr[10]),
-      writeSettings: dco_decode_bool(arr[11]),
-      controllable: dco_decode_bool(arr[12]),
+      toggleCharge: dco_decode_bool(arr[6]),
+      toggleDischarge: dco_decode_bool(arr[7]),
+      toggleBalancer: dco_decode_bool(arr[8]),
+      setChargeLimit: dco_decode_bool(arr[9]),
+      writeSettings: dco_decode_bool(arr[10]),
+      controllable: dco_decode_bool(arr[11]),
     );
   }
 
@@ -602,6 +670,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  double dco_decode_f_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as double;
+  }
+
+  @protected
   int dco_decode_i_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
@@ -644,6 +718,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<Setting> dco_decode_list_setting(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_setting).toList();
+  }
+
+  @protected
   List<Switch> dco_decode_list_switch(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_switch).toList();
@@ -668,15 +748,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  PortDirection? dco_decode_opt_box_autoadd_port_direction(dynamic raw) {
+  double? dco_decode_opt_box_autoadd_f_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw == null ? null : dco_decode_box_autoadd_port_direction(raw);
+    return raw == null ? null : dco_decode_box_autoadd_f_64(raw);
   }
 
   @protected
-  int? dco_decode_opt_box_autoadd_u_32(dynamic raw) {
+  PortDirection? dco_decode_opt_box_autoadd_port_direction(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw == null ? null : dco_decode_box_autoadd_u_32(raw);
+    return raw == null ? null : dco_decode_box_autoadd_port_direction(raw);
   }
 
   @protected
@@ -689,14 +769,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PortInfo dco_decode_port_info(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 5)
-      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
     return PortInfo(
       id: dco_decode_String(arr[0]),
       label: dco_decode_opt_String(arr[1]),
       direction: dco_decode_opt_box_autoadd_port_direction(arr[2]),
       on_: dco_decode_opt_box_autoadd_bool(arr[3]),
       watts: dco_decode_opt_box_autoadd_f_32(arr[4]),
+      settable: dco_decode_bool(arr[5]),
     );
   }
 
@@ -704,13 +785,110 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Sensor dco_decode_sensor(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 3)
-      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
     return Sensor(
       id: dco_decode_String(arr[0]),
       label: dco_decode_opt_String(arr[1]),
-      celsius: dco_decode_f_32(arr[2]),
+      value: dco_decode_f_64(arr[2]),
+      unit: dco_decode_sensor_unit(arr[3]),
     );
+  }
+
+  @protected
+  SensorUnit dco_decode_sensor_unit(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return SensorUnit.values[raw as int];
+  }
+
+  @protected
+  Setting dco_decode_setting(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return Setting(
+      id: dco_decode_String(arr[0]),
+      label: dco_decode_opt_String(arr[1]),
+      value: dco_decode_setting_value(arr[2]),
+      kind: dco_decode_setting_kind(arr[3]),
+      writable: dco_decode_bool(arr[4]),
+    );
+  }
+
+  @protected
+  SettingKind dco_decode_setting_kind(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return SettingKind_Bool();
+      case 1:
+        return SettingKind_Number(
+          min: dco_decode_opt_box_autoadd_f_64(raw[1]),
+          max: dco_decode_opt_box_autoadd_f_64(raw[2]),
+          step: dco_decode_opt_box_autoadd_f_64(raw[3]),
+          unit: dco_decode_String(raw[4]),
+        );
+      case 2:
+        return SettingKind_Enum(options: dco_decode_list_String(raw[1]));
+      case 3:
+        return SettingKind_Text();
+      default:
+        throw Exception("unreachable");
+    }
+  }
+
+  @protected
+  SettingValue dco_decode_setting_value(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return SettingValue_Bool(dco_decode_bool(raw[1]));
+      case 1:
+        return SettingValue_Number(dco_decode_f_64(raw[1]));
+      case 2:
+        return SettingValue_Text(dco_decode_String(raw[1]));
+      default:
+        throw Exception("unreachable");
+    }
+  }
+
+  @protected
+  StatusUpdate dco_decode_status_update(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return StatusUpdate_Sensor(dco_decode_box_autoadd_sensor(raw[1]));
+      case 1:
+        return StatusUpdate_Switch(dco_decode_box_autoadd_switch(raw[1]));
+      case 2:
+        return StatusUpdate_Port(dco_decode_box_autoadd_port_info(raw[1]));
+      case 3:
+        return StatusUpdate_Cell(dco_decode_box_autoadd_cell_info(raw[1]));
+      case 4:
+        return StatusUpdate_Setting(dco_decode_box_autoadd_setting(raw[1]));
+      case 5:
+        return StatusUpdate_Alarms(dco_decode_list_String(raw[1]));
+      default:
+        throw Exception("unreachable");
+    }
+  }
+
+  @protected
+  StreamEvent dco_decode_stream_event(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return StreamEvent_Snapshot(
+          dco_decode_box_autoadd_battery_status(raw[1]),
+        );
+      case 1:
+        return StreamEvent_Update(dco_decode_box_autoadd_status_update(raw[1]));
+      case 2:
+        return StreamEvent_Error(dco_decode_String(raw[1]));
+      default:
+        throw Exception("unreachable");
+    }
   }
 
   @protected
@@ -724,12 +902,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       label: dco_decode_opt_String(arr[1]),
       on_: dco_decode_bool(arr[2]),
     );
-  }
-
-  @protected
-  int dco_decode_u_32(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw as int;
   }
 
   @protected
@@ -800,6 +972,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  RustStreamSink<StreamEvent> sse_decode_StreamSink_stream_event_Sse(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    throw UnimplementedError('Unreachable ()');
+  }
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_list_prim_u_8_strict(deserializer);
@@ -809,55 +989,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   BatteryStatus sse_decode_battery_status(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_soc = sse_decode_opt_box_autoadd_f_32(deserializer);
-    var var_soh = sse_decode_opt_box_autoadd_f_32(deserializer);
-    var var_voltage = sse_decode_opt_box_autoadd_f_32(deserializer);
-    var var_current = sse_decode_opt_box_autoadd_f_32(deserializer);
-    var var_powerIn = sse_decode_opt_box_autoadd_f_32(deserializer);
-    var var_powerOut = sse_decode_opt_box_autoadd_f_32(deserializer);
-    var var_temperatures = sse_decode_list_sensor(deserializer);
-    var var_timeRemainingH = sse_decode_opt_box_autoadd_f_32(deserializer);
-    var var_capacityRemainingAh = sse_decode_opt_box_autoadd_f_32(deserializer);
-    var var_capacityFullAh = sse_decode_opt_box_autoadd_f_32(deserializer);
-    var var_cycles = sse_decode_opt_box_autoadd_u_32(deserializer);
-    var var_charging = sse_decode_opt_box_autoadd_bool(deserializer);
-    var var_discharging = sse_decode_opt_box_autoadd_bool(deserializer);
+    var var_sensors = sse_decode_list_sensor(deserializer);
     var var_switches = sse_decode_list_switch(deserializer);
-    var var_chargeCurrentLimitA = sse_decode_opt_box_autoadd_f_32(deserializer);
-    var var_dischargeCurrentLimitA = sse_decode_opt_box_autoadd_f_32(
-      deserializer,
-    );
-    var var_socLimitMax = sse_decode_opt_box_autoadd_f_32(deserializer);
-    var var_socLimitMin = sse_decode_opt_box_autoadd_f_32(deserializer);
-    var var_cells = sse_decode_list_cell_info(deserializer);
     var var_ports = sse_decode_list_port_info(deserializer);
+    var var_cells = sse_decode_list_cell_info(deserializer);
+    var var_settings = sse_decode_list_setting(deserializer);
     var var_alarms = sse_decode_list_String(deserializer);
-    var var_temperatureC = sse_decode_opt_box_autoadd_f_32(deserializer);
-    var var_cellDelta = sse_decode_opt_box_autoadd_f_32(deserializer);
     return BatteryStatus(
-      soc: var_soc,
-      soh: var_soh,
-      voltage: var_voltage,
-      current: var_current,
-      powerIn: var_powerIn,
-      powerOut: var_powerOut,
-      temperatures: var_temperatures,
-      timeRemainingH: var_timeRemainingH,
-      capacityRemainingAh: var_capacityRemainingAh,
-      capacityFullAh: var_capacityFullAh,
-      cycles: var_cycles,
-      charging: var_charging,
-      discharging: var_discharging,
+      sensors: var_sensors,
       switches: var_switches,
-      chargeCurrentLimitA: var_chargeCurrentLimitA,
-      dischargeCurrentLimitA: var_dischargeCurrentLimitA,
-      socLimitMax: var_socLimitMax,
-      socLimitMin: var_socLimitMin,
-      cells: var_cells,
       ports: var_ports,
+      cells: var_cells,
+      settings: var_settings,
       alarms: var_alarms,
-      temperatureC: var_temperatureC,
-      cellDelta: var_cellDelta,
     );
   }
 
@@ -868,15 +1012,35 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BatteryStatus sse_decode_box_autoadd_battery_status(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_battery_status(deserializer));
+  }
+
+  @protected
   bool sse_decode_box_autoadd_bool(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_bool(deserializer));
   }
 
   @protected
+  CellInfo sse_decode_box_autoadd_cell_info(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_cell_info(deserializer));
+  }
+
+  @protected
   double sse_decode_box_autoadd_f_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_f_32(deserializer));
+  }
+
+  @protected
+  double sse_decode_box_autoadd_f_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_f_64(deserializer));
   }
 
   @protected
@@ -888,9 +1052,35 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  int sse_decode_box_autoadd_u_32(SseDeserializer deserializer) {
+  PortInfo sse_decode_box_autoadd_port_info(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    return (sse_decode_u_32(deserializer));
+    return (sse_decode_port_info(deserializer));
+  }
+
+  @protected
+  Sensor sse_decode_box_autoadd_sensor(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_sensor(deserializer));
+  }
+
+  @protected
+  Setting sse_decode_box_autoadd_setting(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_setting(deserializer));
+  }
+
+  @protected
+  StatusUpdate sse_decode_box_autoadd_status_update(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_status_update(deserializer));
+  }
+
+  @protected
+  Switch sse_decode_box_autoadd_switch(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_switch(deserializer));
   }
 
   @protected
@@ -902,7 +1092,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_readTemperature = sse_decode_bool(deserializer);
     var var_readLimits = sse_decode_bool(deserializer);
     var var_readAlarms = sse_decode_bool(deserializer);
-    var var_togglePorts = sse_decode_bool(deserializer);
     var var_toggleCharge = sse_decode_bool(deserializer);
     var var_toggleDischarge = sse_decode_bool(deserializer);
     var var_toggleBalancer = sse_decode_bool(deserializer);
@@ -916,7 +1105,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       readTemperature: var_readTemperature,
       readLimits: var_readLimits,
       readAlarms: var_readAlarms,
-      togglePorts: var_togglePorts,
       toggleCharge: var_toggleCharge,
       toggleDischarge: var_toggleDischarge,
       toggleBalancer: var_toggleBalancer,
@@ -982,6 +1170,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   double sse_decode_f_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getFloat32();
+  }
+
+  @protected
+  double sse_decode_f_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getFloat64();
   }
 
   @protected
@@ -1060,6 +1254,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<Setting> sse_decode_list_setting(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <Setting>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_setting(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<Switch> sse_decode_list_switch(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -1105,6 +1311,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  double? sse_decode_opt_box_autoadd_f_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_f_64(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   PortDirection? sse_decode_opt_box_autoadd_port_direction(
     SseDeserializer deserializer,
   ) {
@@ -1112,17 +1329,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_box_autoadd_port_direction(deserializer));
-    } else {
-      return null;
-    }
-  }
-
-  @protected
-  int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-
-    if (sse_decode_bool(deserializer)) {
-      return (sse_decode_box_autoadd_u_32(deserializer));
     } else {
       return null;
     }
@@ -1143,12 +1349,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_direction = sse_decode_opt_box_autoadd_port_direction(deserializer);
     var var_on_ = sse_decode_opt_box_autoadd_bool(deserializer);
     var var_watts = sse_decode_opt_box_autoadd_f_32(deserializer);
+    var var_settable = sse_decode_bool(deserializer);
     return PortInfo(
       id: var_id,
       label: var_label,
       direction: var_direction,
       on_: var_on_,
       watts: var_watts,
+      settable: var_settable,
     );
   }
 
@@ -1157,8 +1365,136 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_id = sse_decode_String(deserializer);
     var var_label = sse_decode_opt_String(deserializer);
-    var var_celsius = sse_decode_f_32(deserializer);
-    return Sensor(id: var_id, label: var_label, celsius: var_celsius);
+    var var_value = sse_decode_f_64(deserializer);
+    var var_unit = sse_decode_sensor_unit(deserializer);
+    return Sensor(
+      id: var_id,
+      label: var_label,
+      value: var_value,
+      unit: var_unit,
+    );
+  }
+
+  @protected
+  SensorUnit sse_decode_sensor_unit(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return SensorUnit.values[inner];
+  }
+
+  @protected
+  Setting sse_decode_setting(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_label = sse_decode_opt_String(deserializer);
+    var var_value = sse_decode_setting_value(deserializer);
+    var var_kind = sse_decode_setting_kind(deserializer);
+    var var_writable = sse_decode_bool(deserializer);
+    return Setting(
+      id: var_id,
+      label: var_label,
+      value: var_value,
+      kind: var_kind,
+      writable: var_writable,
+    );
+  }
+
+  @protected
+  SettingKind sse_decode_setting_kind(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        return SettingKind_Bool();
+      case 1:
+        var var_min = sse_decode_opt_box_autoadd_f_64(deserializer);
+        var var_max = sse_decode_opt_box_autoadd_f_64(deserializer);
+        var var_step = sse_decode_opt_box_autoadd_f_64(deserializer);
+        var var_unit = sse_decode_String(deserializer);
+        return SettingKind_Number(
+          min: var_min,
+          max: var_max,
+          step: var_step,
+          unit: var_unit,
+        );
+      case 2:
+        var var_options = sse_decode_list_String(deserializer);
+        return SettingKind_Enum(options: var_options);
+      case 3:
+        return SettingKind_Text();
+      default:
+        throw UnimplementedError('');
+    }
+  }
+
+  @protected
+  SettingValue sse_decode_setting_value(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        var var_field0 = sse_decode_bool(deserializer);
+        return SettingValue_Bool(var_field0);
+      case 1:
+        var var_field0 = sse_decode_f_64(deserializer);
+        return SettingValue_Number(var_field0);
+      case 2:
+        var var_field0 = sse_decode_String(deserializer);
+        return SettingValue_Text(var_field0);
+      default:
+        throw UnimplementedError('');
+    }
+  }
+
+  @protected
+  StatusUpdate sse_decode_status_update(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        var var_field0 = sse_decode_box_autoadd_sensor(deserializer);
+        return StatusUpdate_Sensor(var_field0);
+      case 1:
+        var var_field0 = sse_decode_box_autoadd_switch(deserializer);
+        return StatusUpdate_Switch(var_field0);
+      case 2:
+        var var_field0 = sse_decode_box_autoadd_port_info(deserializer);
+        return StatusUpdate_Port(var_field0);
+      case 3:
+        var var_field0 = sse_decode_box_autoadd_cell_info(deserializer);
+        return StatusUpdate_Cell(var_field0);
+      case 4:
+        var var_field0 = sse_decode_box_autoadd_setting(deserializer);
+        return StatusUpdate_Setting(var_field0);
+      case 5:
+        var var_field0 = sse_decode_list_String(deserializer);
+        return StatusUpdate_Alarms(var_field0);
+      default:
+        throw UnimplementedError('');
+    }
+  }
+
+  @protected
+  StreamEvent sse_decode_stream_event(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        var var_field0 = sse_decode_box_autoadd_battery_status(deserializer);
+        return StreamEvent_Snapshot(var_field0);
+      case 1:
+        var var_field0 = sse_decode_box_autoadd_status_update(deserializer);
+        return StreamEvent_Update(var_field0);
+      case 2:
+        var var_field0 = sse_decode_String(deserializer);
+        return StreamEvent_Error(var_field0);
+      default:
+        throw UnimplementedError('');
+    }
   }
 
   @protected
@@ -1168,12 +1504,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_label = sse_decode_opt_String(deserializer);
     var var_on_ = sse_decode_bool(deserializer);
     return Switch(id: var_id, label: var_label, on_: var_on_);
-  }
-
-  @protected
-  int sse_decode_u_32(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getUint32();
   }
 
   @protected
@@ -1248,6 +1578,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_StreamSink_stream_event_Sse(
+    RustStreamSink<StreamEvent> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(
+      self.setupAndSerialize(
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_stream_event,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+      ),
+      serializer,
+    );
+  }
+
+  @protected
   void sse_encode_String(String self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_list_prim_u_8_strict(utf8.encoder.convert(self), serializer);
@@ -1256,29 +1603,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   void sse_encode_battery_status(BatteryStatus self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_opt_box_autoadd_f_32(self.soc, serializer);
-    sse_encode_opt_box_autoadd_f_32(self.soh, serializer);
-    sse_encode_opt_box_autoadd_f_32(self.voltage, serializer);
-    sse_encode_opt_box_autoadd_f_32(self.current, serializer);
-    sse_encode_opt_box_autoadd_f_32(self.powerIn, serializer);
-    sse_encode_opt_box_autoadd_f_32(self.powerOut, serializer);
-    sse_encode_list_sensor(self.temperatures, serializer);
-    sse_encode_opt_box_autoadd_f_32(self.timeRemainingH, serializer);
-    sse_encode_opt_box_autoadd_f_32(self.capacityRemainingAh, serializer);
-    sse_encode_opt_box_autoadd_f_32(self.capacityFullAh, serializer);
-    sse_encode_opt_box_autoadd_u_32(self.cycles, serializer);
-    sse_encode_opt_box_autoadd_bool(self.charging, serializer);
-    sse_encode_opt_box_autoadd_bool(self.discharging, serializer);
+    sse_encode_list_sensor(self.sensors, serializer);
     sse_encode_list_switch(self.switches, serializer);
-    sse_encode_opt_box_autoadd_f_32(self.chargeCurrentLimitA, serializer);
-    sse_encode_opt_box_autoadd_f_32(self.dischargeCurrentLimitA, serializer);
-    sse_encode_opt_box_autoadd_f_32(self.socLimitMax, serializer);
-    sse_encode_opt_box_autoadd_f_32(self.socLimitMin, serializer);
-    sse_encode_list_cell_info(self.cells, serializer);
     sse_encode_list_port_info(self.ports, serializer);
+    sse_encode_list_cell_info(self.cells, serializer);
+    sse_encode_list_setting(self.settings, serializer);
     sse_encode_list_String(self.alarms, serializer);
-    sse_encode_opt_box_autoadd_f_32(self.temperatureC, serializer);
-    sse_encode_opt_box_autoadd_f_32(self.cellDelta, serializer);
   }
 
   @protected
@@ -1288,15 +1618,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_battery_status(
+    BatteryStatus self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_battery_status(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_bool(bool self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_bool(self, serializer);
   }
 
   @protected
+  void sse_encode_box_autoadd_cell_info(
+    CellInfo self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_cell_info(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_f_32(double self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_f_32(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_f_64(double self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_f_64(self, serializer);
   }
 
   @protected
@@ -1309,9 +1663,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer) {
+  void sse_encode_box_autoadd_port_info(
+    PortInfo self,
+    SseSerializer serializer,
+  ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_u_32(self, serializer);
+    sse_encode_port_info(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_sensor(Sensor self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_sensor(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_setting(Setting self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_setting(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_status_update(
+    StatusUpdate self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_status_update(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_switch(Switch self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_switch(self, serializer);
   }
 
   @protected
@@ -1323,7 +1707,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self.readTemperature, serializer);
     sse_encode_bool(self.readLimits, serializer);
     sse_encode_bool(self.readAlarms, serializer);
-    sse_encode_bool(self.togglePorts, serializer);
     sse_encode_bool(self.toggleCharge, serializer);
     sse_encode_bool(self.toggleDischarge, serializer);
     sse_encode_bool(self.toggleBalancer, serializer);
@@ -1372,6 +1755,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_f_32(double self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putFloat32(self);
+  }
+
+  @protected
+  void sse_encode_f_64(double self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putFloat64(self);
   }
 
   @protected
@@ -1445,6 +1834,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_setting(List<Setting> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_setting(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_switch(List<Switch> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
@@ -1484,6 +1882,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_f_64(double? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_f_64(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_port_direction(
     PortDirection? self,
     SseSerializer serializer,
@@ -1493,16 +1901,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_box_autoadd_port_direction(self, serializer);
-    }
-  }
-
-  @protected
-  void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-
-    sse_encode_bool(self != null, serializer);
-    if (self != null) {
-      sse_encode_box_autoadd_u_32(self, serializer);
     }
   }
 
@@ -1520,6 +1918,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_opt_box_autoadd_port_direction(self.direction, serializer);
     sse_encode_opt_box_autoadd_bool(self.on_, serializer);
     sse_encode_opt_box_autoadd_f_32(self.watts, serializer);
+    sse_encode_bool(self.settable, serializer);
   }
 
   @protected
@@ -1527,7 +1926,106 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.id, serializer);
     sse_encode_opt_String(self.label, serializer);
-    sse_encode_f_32(self.celsius, serializer);
+    sse_encode_f_64(self.value, serializer);
+    sse_encode_sensor_unit(self.unit, serializer);
+  }
+
+  @protected
+  void sse_encode_sensor_unit(SensorUnit self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_setting(Setting self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_opt_String(self.label, serializer);
+    sse_encode_setting_value(self.value, serializer);
+    sse_encode_setting_kind(self.kind, serializer);
+    sse_encode_bool(self.writable, serializer);
+  }
+
+  @protected
+  void sse_encode_setting_kind(SettingKind self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case SettingKind_Bool():
+        sse_encode_i_32(0, serializer);
+      case SettingKind_Number(
+        min: final min,
+        max: final max,
+        step: final step,
+        unit: final unit,
+      ):
+        sse_encode_i_32(1, serializer);
+        sse_encode_opt_box_autoadd_f_64(min, serializer);
+        sse_encode_opt_box_autoadd_f_64(max, serializer);
+        sse_encode_opt_box_autoadd_f_64(step, serializer);
+        sse_encode_String(unit, serializer);
+      case SettingKind_Enum(options: final options):
+        sse_encode_i_32(2, serializer);
+        sse_encode_list_String(options, serializer);
+      case SettingKind_Text():
+        sse_encode_i_32(3, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_setting_value(SettingValue self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case SettingValue_Bool(field0: final field0):
+        sse_encode_i_32(0, serializer);
+        sse_encode_bool(field0, serializer);
+      case SettingValue_Number(field0: final field0):
+        sse_encode_i_32(1, serializer);
+        sse_encode_f_64(field0, serializer);
+      case SettingValue_Text(field0: final field0):
+        sse_encode_i_32(2, serializer);
+        sse_encode_String(field0, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_status_update(StatusUpdate self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case StatusUpdate_Sensor(field0: final field0):
+        sse_encode_i_32(0, serializer);
+        sse_encode_box_autoadd_sensor(field0, serializer);
+      case StatusUpdate_Switch(field0: final field0):
+        sse_encode_i_32(1, serializer);
+        sse_encode_box_autoadd_switch(field0, serializer);
+      case StatusUpdate_Port(field0: final field0):
+        sse_encode_i_32(2, serializer);
+        sse_encode_box_autoadd_port_info(field0, serializer);
+      case StatusUpdate_Cell(field0: final field0):
+        sse_encode_i_32(3, serializer);
+        sse_encode_box_autoadd_cell_info(field0, serializer);
+      case StatusUpdate_Setting(field0: final field0):
+        sse_encode_i_32(4, serializer);
+        sse_encode_box_autoadd_setting(field0, serializer);
+      case StatusUpdate_Alarms(field0: final field0):
+        sse_encode_i_32(5, serializer);
+        sse_encode_list_String(field0, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_stream_event(StreamEvent self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case StreamEvent_Snapshot(field0: final field0):
+        sse_encode_i_32(0, serializer);
+        sse_encode_box_autoadd_battery_status(field0, serializer);
+      case StreamEvent_Update(field0: final field0):
+        sse_encode_i_32(1, serializer);
+        sse_encode_box_autoadd_status_update(field0, serializer);
+      case StreamEvent_Error(field0: final field0):
+        sse_encode_i_32(2, serializer);
+        sse_encode_String(field0, serializer);
+    }
   }
 
   @protected
@@ -1536,12 +2034,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.id, serializer);
     sse_encode_opt_String(self.label, serializer);
     sse_encode_bool(self.on_, serializer);
-  }
-
-  @protected
-  void sse_encode_u_32(int self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putUint32(self);
   }
 
   @protected
@@ -1599,8 +2091,9 @@ class BatteryConnImpl extends RustOpaque implements BatteryConn {
       .api
       .crateApiBatteryBatteryConnSet(that: this, id: id, value: value);
 
-  /// Fetch a fresh status snapshot.
-  Future<BatteryStatus> status() =>
+  /// Current full snapshot the actor has accumulated. Used for
+  /// manual/pull-to-refresh; the live picture comes from [`watch`](Self::watch).
+  BatteryStatus status() =>
       RustLib.instance.api.crateApiBatteryBatteryConnStatus(that: this);
 
   /// Toggle a port or switch by id (`"ac"`, `"charging"`, `"heater"`, ...).
@@ -1608,4 +2101,11 @@ class BatteryConnImpl extends RustOpaque implements BatteryConn {
       .instance
       .api
       .crateApiBatteryBatteryConnToggle(that: this, id: id, on_: on_);
+
+  /// Subscribe to the **real-time** stream. The first event is a full
+  /// [`StreamEvent::Snapshot`] of current state; subsequent events are
+  /// incremental [`StreamEvent::Update`]s (or [`StreamEvent::Error`]). Ends
+  /// when Dart cancels the subscription.
+  Stream<StreamEvent> watch() =>
+      RustLib.instance.api.crateApiBatteryBatteryConnWatch(that: this);
 }

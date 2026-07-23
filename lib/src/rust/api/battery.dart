@@ -5,9 +5,12 @@
 
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
+part 'battery.freezed.dart';
 
-// These functions are ignored because they are not marked as `pub`: `from_ref`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`, `from`
+// These functions are ignored because they are not marked as `pub`: `actor`, `command`, `from_ref`, `publish`, `run_cmd`, `shutdown`
+// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `CmdMsg`, `Wake`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`
 
 /// Scan all enabled transports. `probe_serial` is ignored on platforms
 /// without serial backends.
@@ -37,122 +40,58 @@ abstract class BatteryConn implements RustOpaqueInterface {
   /// Set a named value (`"charge_limit"` = `"80"`, ...).
   Future<void> set_({required String id, required String value});
 
-  /// Fetch a fresh status snapshot.
-  Future<BatteryStatus> status();
+  /// Current full snapshot the actor has accumulated. Used for
+  /// manual/pull-to-refresh; the live picture comes from [`watch`](Self::watch).
+  BatteryStatus status();
 
   /// Toggle a port or switch by id (`"ac"`, `"charging"`, `"heater"`, ...).
   Future<void> toggle({required String id, required bool on_});
+
+  /// Subscribe to the **real-time** stream. The first event is a full
+  /// [`StreamEvent::Snapshot`] of current state; subsequent events are
+  /// incremental [`StreamEvent::Update`]s (or [`StreamEvent::Error`]). Ends
+  /// when Dart cancels the subscription.
+  Stream<StreamEvent> watch();
 }
 
+/// A snapshot of device state: free-form, id-addressed collections.
 class BatteryStatus {
-  final double? soc;
-  final double? soh;
-  final double? voltage;
-  final double? current;
-  final double? powerIn;
-  final double? powerOut;
-  final List<Sensor> temperatures;
-  final double? timeRemainingH;
-  final double? capacityRemainingAh;
-  final double? capacityFullAh;
-  final int? cycles;
-  final bool? charging;
-  final bool? discharging;
+  final List<Sensor> sensors;
   final List<Switch> switches;
-  final double? chargeCurrentLimitA;
-  final double? dischargeCurrentLimitA;
-  final double? socLimitMax;
-  final double? socLimitMin;
-  final List<CellInfo> cells;
   final List<PortInfo> ports;
+  final List<CellInfo> cells;
+  final List<Setting> settings;
   final List<String> alarms;
 
-  /// Convenience: highest reported temperature.
-  final double? temperatureC;
-
-  /// Convenience: cell voltage spread (max - min).
-  final double? cellDelta;
-
   const BatteryStatus({
-    this.soc,
-    this.soh,
-    this.voltage,
-    this.current,
-    this.powerIn,
-    this.powerOut,
-    required this.temperatures,
-    this.timeRemainingH,
-    this.capacityRemainingAh,
-    this.capacityFullAh,
-    this.cycles,
-    this.charging,
-    this.discharging,
+    required this.sensors,
     required this.switches,
-    this.chargeCurrentLimitA,
-    this.dischargeCurrentLimitA,
-    this.socLimitMax,
-    this.socLimitMin,
-    required this.cells,
     required this.ports,
+    required this.cells,
+    required this.settings,
     required this.alarms,
-    this.temperatureC,
-    this.cellDelta,
   });
 
   @override
   int get hashCode =>
-      soc.hashCode ^
-      soh.hashCode ^
-      voltage.hashCode ^
-      current.hashCode ^
-      powerIn.hashCode ^
-      powerOut.hashCode ^
-      temperatures.hashCode ^
-      timeRemainingH.hashCode ^
-      capacityRemainingAh.hashCode ^
-      capacityFullAh.hashCode ^
-      cycles.hashCode ^
-      charging.hashCode ^
-      discharging.hashCode ^
+      sensors.hashCode ^
       switches.hashCode ^
-      chargeCurrentLimitA.hashCode ^
-      dischargeCurrentLimitA.hashCode ^
-      socLimitMax.hashCode ^
-      socLimitMin.hashCode ^
-      cells.hashCode ^
       ports.hashCode ^
-      alarms.hashCode ^
-      temperatureC.hashCode ^
-      cellDelta.hashCode;
+      cells.hashCode ^
+      settings.hashCode ^
+      alarms.hashCode;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is BatteryStatus &&
           runtimeType == other.runtimeType &&
-          soc == other.soc &&
-          soh == other.soh &&
-          voltage == other.voltage &&
-          current == other.current &&
-          powerIn == other.powerIn &&
-          powerOut == other.powerOut &&
-          temperatures == other.temperatures &&
-          timeRemainingH == other.timeRemainingH &&
-          capacityRemainingAh == other.capacityRemainingAh &&
-          capacityFullAh == other.capacityFullAh &&
-          cycles == other.cycles &&
-          charging == other.charging &&
-          discharging == other.discharging &&
+          sensors == other.sensors &&
           switches == other.switches &&
-          chargeCurrentLimitA == other.chargeCurrentLimitA &&
-          dischargeCurrentLimitA == other.dischargeCurrentLimitA &&
-          socLimitMax == other.socLimitMax &&
-          socLimitMin == other.socLimitMin &&
-          cells == other.cells &&
           ports == other.ports &&
-          alarms == other.alarms &&
-          temperatureC == other.temperatureC &&
-          cellDelta == other.cellDelta;
+          cells == other.cells &&
+          settings == other.settings &&
+          alarms == other.alarms;
 }
 
 /// Flattened capability flags (Dart-friendly booleans).
@@ -163,7 +102,6 @@ class Caps {
   final bool readTemperature;
   final bool readLimits;
   final bool readAlarms;
-  final bool togglePorts;
   final bool toggleCharge;
   final bool toggleDischarge;
   final bool toggleBalancer;
@@ -178,7 +116,6 @@ class Caps {
     required this.readTemperature,
     required this.readLimits,
     required this.readAlarms,
-    required this.togglePorts,
     required this.toggleCharge,
     required this.toggleDischarge,
     required this.toggleBalancer,
@@ -195,7 +132,6 @@ class Caps {
       readTemperature.hashCode ^
       readLimits.hashCode ^
       readAlarms.hashCode ^
-      togglePorts.hashCode ^
       toggleCharge.hashCode ^
       toggleDischarge.hashCode ^
       toggleBalancer.hashCode ^
@@ -214,7 +150,6 @@ class Caps {
           readTemperature == other.readTemperature &&
           readLimits == other.readLimits &&
           readAlarms == other.readAlarms &&
-          togglePorts == other.togglePorts &&
           toggleCharge == other.toggleCharge &&
           toggleDischarge == other.toggleDischarge &&
           toggleBalancer == other.toggleBalancer &&
@@ -321,12 +256,16 @@ class PortInfo {
   final bool? on_;
   final double? watts;
 
+  /// Whether this specific port accepts on/off control.
+  final bool settable;
+
   const PortInfo({
     required this.id,
     this.label,
     this.direction,
     this.on_,
     this.watts,
+    required this.settable,
   });
 
   @override
@@ -335,7 +274,8 @@ class PortInfo {
       label.hashCode ^
       direction.hashCode ^
       on_.hashCode ^
-      watts.hashCode;
+      watts.hashCode ^
+      settable.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -346,18 +286,27 @@ class PortInfo {
           label == other.label &&
           direction == other.direction &&
           on_ == other.on_ &&
-          watts == other.watts;
+          watts == other.watts &&
+          settable == other.settable;
 }
 
+/// A read-only scalar reading (SOC, voltage, a temperature probe, ...).
 class Sensor {
   final String id;
   final String? label;
-  final double celsius;
+  final double value;
+  final SensorUnit unit;
 
-  const Sensor({required this.id, this.label, required this.celsius});
+  const Sensor({
+    required this.id,
+    this.label,
+    required this.value,
+    required this.unit,
+  });
 
   @override
-  int get hashCode => id.hashCode ^ label.hashCode ^ celsius.hashCode;
+  int get hashCode =>
+      id.hashCode ^ label.hashCode ^ value.hashCode ^ unit.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -366,9 +315,114 @@ class Sensor {
           runtimeType == other.runtimeType &&
           id == other.id &&
           label == other.label &&
-          celsius == other.celsius;
+          value == other.value &&
+          unit == other.unit;
 }
 
+/// Physical unit of a [`Sensor`]/numeric setting.
+enum SensorUnit {
+  percent,
+  volt,
+  amp,
+  watt,
+  celsius,
+  ampHour,
+  hour,
+  second,
+  count,
+}
+
+/// A readable/writable configuration value (BMS thresholds, charge limits, ...).
+class Setting {
+  final String id;
+  final String? label;
+  final SettingValue value;
+  final SettingKind kind;
+  final bool writable;
+
+  const Setting({
+    required this.id,
+    this.label,
+    required this.value,
+    required this.kind,
+    required this.writable,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      label.hashCode ^
+      value.hashCode ^
+      kind.hashCode ^
+      writable.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Setting &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          label == other.label &&
+          value == other.value &&
+          kind == other.kind &&
+          writable == other.writable;
+}
+
+@freezed
+sealed class SettingKind with _$SettingKind {
+  const SettingKind._();
+
+  const factory SettingKind.bool() = SettingKind_Bool;
+
+  /// `unit` is a display symbol (e.g. `"V"`, `"%"`), empty for none.
+  const factory SettingKind.number({
+    double? min,
+    double? max,
+    double? step,
+    required String unit,
+  }) = SettingKind_Number;
+  const factory SettingKind.enum_({required List<String> options}) =
+      SettingKind_Enum;
+  const factory SettingKind.text() = SettingKind_Text;
+}
+
+@freezed
+sealed class SettingValue with _$SettingValue {
+  const SettingValue._();
+
+  const factory SettingValue.bool(bool field0) = SettingValue_Bool;
+  const factory SettingValue.number(double field0) = SettingValue_Number;
+  const factory SettingValue.text(String field0) = SettingValue_Text;
+}
+
+@freezed
+sealed class StatusUpdate with _$StatusUpdate {
+  const StatusUpdate._();
+
+  const factory StatusUpdate.sensor(Sensor field0) = StatusUpdate_Sensor;
+  const factory StatusUpdate.switch_(Switch field0) = StatusUpdate_Switch;
+  const factory StatusUpdate.port(PortInfo field0) = StatusUpdate_Port;
+  const factory StatusUpdate.cell(CellInfo field0) = StatusUpdate_Cell;
+  const factory StatusUpdate.setting(Setting field0) = StatusUpdate_Setting;
+  const factory StatusUpdate.alarms(List<String> field0) = StatusUpdate_Alarms;
+}
+
+@freezed
+sealed class StreamEvent with _$StreamEvent {
+  const StreamEvent._();
+
+  /// Full state; sent once when a subscriber attaches (and after a lag resync).
+  const factory StreamEvent.snapshot(BatteryStatus field0) =
+      StreamEvent_Snapshot;
+
+  /// A single incremental change.
+  const factory StreamEvent.update(StatusUpdate field0) = StreamEvent_Update;
+
+  /// A transient transport error.
+  const factory StreamEvent.error(String field0) = StreamEvent_Error;
+}
+
+/// A writable boolean (charge/discharge MOSFET, heater, ...).
 class Switch {
   final String id;
   final String? label;

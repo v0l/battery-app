@@ -10,6 +10,7 @@ crate-type = ["cdylib", "staticlib"]
 flutter_rust_bridge = "=2.12.0"
 anyhow = "1"
 tokio = { version = "1", features = ["sync", "time", "rt"] }
+futures-util = "0.3"
 
 # Desktop: every host-buildable backend (BLE + serial).
 [target.'cfg(not(any(target_os = "ios", target_os = "android")))'.dependencies]
@@ -17,7 +18,13 @@ battery_control = { path = "../../battery-control", default-features = false, fe
 
 # Mobile: BLE-only backends (no serial/CAN on iOS; Android serial needs USB-host APIs).
 [target.'cfg(any(target_os = "ios", target_os = "android"))'.dependencies]
-battery_control = { path = "../../battery-control", default-features = false, features = ["anker"] }
+battery_control = { path = "../../battery-control", default-features = false, features = ["anker", "jk-ble"] }
+
+# Android: btleplug's droidplug must be initialized with a JNIEnv from the app
+# classloader (see src/android_init.rs, called from MainActivity).
+[target.'cfg(target_os = "android")'.dependencies]
+btleplug = "0.12"
+jni = "0.19"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }
