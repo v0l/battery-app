@@ -1,0 +1,23 @@
+[package]
+name = "rust_lib_battery_app"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+flutter_rust_bridge = "=2.12.0"
+anyhow = "1"
+tokio = { version = "1", features = ["sync", "time", "rt"] }
+
+# Desktop: every host-buildable backend (BLE + serial).
+[target.'cfg(not(any(target_os = "ios", target_os = "android")))'.dependencies]
+battery_control = { path = "../../battery-control", default-features = false, features = ["full"] }
+
+# Mobile: BLE-only backends (no serial/CAN on iOS; Android serial needs USB-host APIs).
+[target.'cfg(any(target_os = "ios", target_os = "android"))'.dependencies]
+battery_control = { path = "../../battery-control", default-features = false, features = ["anker"] }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }
