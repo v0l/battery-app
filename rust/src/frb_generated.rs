@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.12.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1173176299;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1849242162;
 
 // Section: executor
 
@@ -47,6 +47,66 @@ flutter_rust_bridge::frb_generated_default_handler!();
 
 // Section: wire_funcs
 
+fn wire__crate__api__battery__BatteryConn_authenticate_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "BatteryConn_authenticate",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BatteryConn>,
+            >>::sse_decode(&mut deserializer);
+            let api_pin = <Option<String>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::battery::BatteryConn::authenticate(
+                            &*api_that_guard,
+                            api_pin,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__battery__BatteryConn_capabilities_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -571,6 +631,33 @@ impl SseDecode for String {
     }
 }
 
+impl SseDecode for crate::api::battery::AuthOutcome {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut tag_ = <i32>::sse_decode(deserializer);
+        match tag_ {
+            0 => {
+                return crate::api::battery::AuthOutcome::Authed;
+            }
+            1 => {
+                let mut var_message = <String>::sse_decode(deserializer);
+                return crate::api::battery::AuthOutcome::PendingApproval {
+                    message: var_message,
+                };
+            }
+            2 => {
+                let mut var_message = <String>::sse_decode(deserializer);
+                return crate::api::battery::AuthOutcome::PinCode {
+                    message: var_message,
+                };
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
 impl SseDecode for crate::api::battery::BatteryStatus {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -612,6 +699,7 @@ impl SseDecode for crate::api::battery::Caps {
         let mut var_toggleBalancer = <bool>::sse_decode(deserializer);
         let mut var_setChargeLimit = <bool>::sse_decode(deserializer);
         let mut var_writeSettings = <bool>::sse_decode(deserializer);
+        let mut var_requiresAuth = <bool>::sse_decode(deserializer);
         let mut var_controllable = <bool>::sse_decode(deserializer);
         return crate::api::battery::Caps {
             read_basic: var_readBasic,
@@ -625,6 +713,7 @@ impl SseDecode for crate::api::battery::Caps {
             toggle_balancer: var_toggleBalancer,
             set_charge_limit: var_setChargeLimit,
             write_settings: var_writeSettings,
+            requires_auth: var_requiresAuth,
             controllable: var_controllable,
         };
     }
@@ -1124,12 +1213,18 @@ fn pde_ffi_dispatcher_primary_impl(
 ) {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        3 => wire__crate__api__battery__BatteryConn_set_impl(port, ptr, rust_vec_len, data_len),
-        5 => wire__crate__api__battery__BatteryConn_toggle_impl(port, ptr, rust_vec_len, data_len),
-        6 => wire__crate__api__battery__BatteryConn_watch_impl(port, ptr, rust_vec_len, data_len),
-        7 => wire__crate__api__battery__connect_impl(port, ptr, rust_vec_len, data_len),
-        8 => wire__crate__api__battery__discover_devices_impl(port, ptr, rust_vec_len, data_len),
-        10 => wire__crate__api__init__init_app_impl(port, ptr, rust_vec_len, data_len),
+        1 => wire__crate__api__battery__BatteryConn_authenticate_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        4 => wire__crate__api__battery__BatteryConn_set_impl(port, ptr, rust_vec_len, data_len),
+        6 => wire__crate__api__battery__BatteryConn_toggle_impl(port, ptr, rust_vec_len, data_len),
+        7 => wire__crate__api__battery__BatteryConn_watch_impl(port, ptr, rust_vec_len, data_len),
+        8 => wire__crate__api__battery__connect_impl(port, ptr, rust_vec_len, data_len),
+        9 => wire__crate__api__battery__discover_devices_impl(port, ptr, rust_vec_len, data_len),
+        11 => wire__crate__api__init__init_app_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -1142,10 +1237,10 @@ fn pde_ffi_dispatcher_sync_impl(
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        1 => wire__crate__api__battery__BatteryConn_capabilities_impl(ptr, rust_vec_len, data_len),
-        2 => wire__crate__api__battery__BatteryConn_info_impl(ptr, rust_vec_len, data_len),
-        4 => wire__crate__api__battery__BatteryConn_status_impl(ptr, rust_vec_len, data_len),
-        9 => wire__crate__api__battery__has_serial_support_impl(ptr, rust_vec_len, data_len),
+        2 => wire__crate__api__battery__BatteryConn_capabilities_impl(ptr, rust_vec_len, data_len),
+        3 => wire__crate__api__battery__BatteryConn_info_impl(ptr, rust_vec_len, data_len),
+        5 => wire__crate__api__battery__BatteryConn_status_impl(ptr, rust_vec_len, data_len),
+        10 => wire__crate__api__battery__has_serial_support_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -1167,6 +1262,34 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<BatteryConn>> for BatteryConn 
     }
 }
 
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::battery::AuthOutcome {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            crate::api::battery::AuthOutcome::Authed => [0.into_dart()].into_dart(),
+            crate::api::battery::AuthOutcome::PendingApproval { message } => {
+                [1.into_dart(), message.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::battery::AuthOutcome::PinCode { message } => {
+                [2.into_dart(), message.into_into_dart().into_dart()].into_dart()
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::battery::AuthOutcome
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::battery::AuthOutcome>
+    for crate::api::battery::AuthOutcome
+{
+    fn into_into_dart(self) -> crate::api::battery::AuthOutcome {
+        self
+    }
+}
 // Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::battery::BatteryStatus {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
@@ -1207,6 +1330,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::battery::Caps {
             self.toggle_balancer.into_into_dart().into_dart(),
             self.set_charge_limit.into_into_dart().into_dart(),
             self.write_settings.into_into_dart().into_dart(),
+            self.requires_auth.into_into_dart().into_dart(),
             self.controllable.into_into_dart().into_dart(),
         ]
         .into_dart()
@@ -1619,6 +1743,28 @@ impl SseEncode for String {
     }
 }
 
+impl SseEncode for crate::api::battery::AuthOutcome {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        match self {
+            crate::api::battery::AuthOutcome::Authed => {
+                <i32>::sse_encode(0, serializer);
+            }
+            crate::api::battery::AuthOutcome::PendingApproval { message } => {
+                <i32>::sse_encode(1, serializer);
+                <String>::sse_encode(message, serializer);
+            }
+            crate::api::battery::AuthOutcome::PinCode { message } => {
+                <i32>::sse_encode(2, serializer);
+                <String>::sse_encode(message, serializer);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
 impl SseEncode for crate::api::battery::BatteryStatus {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1652,6 +1798,7 @@ impl SseEncode for crate::api::battery::Caps {
         <bool>::sse_encode(self.toggle_balancer, serializer);
         <bool>::sse_encode(self.set_charge_limit, serializer);
         <bool>::sse_encode(self.write_settings, serializer);
+        <bool>::sse_encode(self.requires_auth, serializer);
         <bool>::sse_encode(self.controllable, serializer);
     }
 }

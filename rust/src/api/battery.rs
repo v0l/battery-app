@@ -44,6 +44,7 @@ pub struct Caps {
     pub toggle_balancer: bool,
     pub set_charge_limit: bool,
     pub write_settings: bool,
+    pub requires_auth: bool,
     pub controllable: bool,
 }
 
@@ -62,6 +63,7 @@ impl From<bc::Capabilities> for Caps {
             toggle_balancer: c.contains(C::TOGGLE_BALANCER),
             set_charge_limit: c.contains(C::SET_CHARGE_LIMIT),
             write_settings: c.contains(C::WRITE_SETTINGS),
+            requires_auth: c.contains(C::REQUIRES_AUTH),
             controllable: c.is_controllable(),
         }
     }
@@ -325,10 +327,43 @@ pub async fn discover_devices(ble_secs: u64, probe_serial: bool) -> Result<Vec<D
 // Connection handle
 // ---------------------------------------------------------------------------
 
-/// A command plus a one-shot channel to report its result back to the caller.
+/// The result of an authentication/binding step, mirrored for Dart.
+pub enum AuthOutcome {
+    /// Authenticated and ready.
+    Authed,
+    /// A physical confirmation is needed on the device (e.g. press & hold the
+    /// power button), then call `authenticate` again.
+    PendingApproval { message: String },
+    /// A PIN/code is required; call `authenticate` again with it.
+    PinCode { message: String },
+}
+
+impl From<bc::AuthState> for AuthOutcome {
+    fn from(s: bc::AuthState) -> Self {
+        match s {
+            bc::AuthState::Authed => AuthOutcome::Authed,
+            bc::AuthState::PendingApproval { message } => AuthOutcome::PendingApproval { message },
+            bc::AuthState::PinCode { message } => AuthOutcome::PinCode { message },
+        }
+    }
+}
+
+/// An operation for the actor: a control command or an auth step.
+enum Op {
+    Cmd(bc::Command),
+    Auth(bc::AuthInput),
+}
+
+/// The successful result of an [`Op`].
+enum OpOk {
+    Done,
+    Auth(AuthOutcome),
+}
+
+/// An operation plus a one-shot channel to report its result back to the caller.
 struct CmdMsg {
-    cmd: bc::Command,
-    ack: tokio::sync::oneshot::Sender<std::result::Result<(), String>>,
+    op: Op,
+    ack: tokio::sync::oneshot::Sender<std::result::Result<OpOk, String>>,
 }
 
 /// A live connection to one battery (opaque to Dart; methods are async).
@@ -395,9 +430,16 @@ async fn run_cmd(battery: &mut Box<dyn bc::Battery>, msg: CmdMsg) {
     crate::android_init::ensure_thread_attached();
     // A BLE write can stall (e.g. the device doesn't ACK a with-response write
     // right after a port state change). Bound it so the UI never hangs.
-    let r = match tokio::time::timeout(Duration::from_secs(10), battery.execute(msg.cmd)).await {
-        Ok(res) => res.map_err(|e| e.to_string()),
-        Err(_) => Err("command timed out".to_string()),
+    let r = match msg.op {
+        Op::Cmd(cmd) => match tokio::time::timeout(Duration::from_secs(10), battery.execute(cmd)).await {
+            Ok(res) => res.map(|_| OpOk::Done).map_err(|e| e.to_string()),
+            Err(_) => Err("command timed out".to_string()),
+        },
+        // Auth (bind) can involve a physical button + handshake; allow longer.
+        Op::Auth(input) => match tokio::time::timeout(Duration::from_secs(60), battery.authenticate(input)).await {
+            Ok(res) => res.map(|st| OpOk::Auth(st.into())).map_err(|e| e.to_string()),
+            Err(_) => Err("authentication timed out".to_string()),
+        },
     };
     let _ = msg.ack.send(r);
 }
@@ -520,14 +562,35 @@ impl BatteryConn {
     }
 
     async fn command(&self, cmd: bc::Command) -> Result<()> {
+        match self.run_op(Op::Cmd(cmd)).await? {
+            OpOk::Done => Ok(()),
+            OpOk::Auth(_) => Ok(()),
+        }
+    }
+
+    async fn run_op(&self, op: Op) -> Result<OpOk> {
         let (ack, rx) = tokio::sync::oneshot::channel();
         self.cmd_tx
-            .send(CmdMsg { cmd, ack })
+            .send(CmdMsg { op, ack })
             .await
             .map_err(|_| anyhow!("device disconnected"))?;
         rx.await
             .map_err(|_| anyhow!("device task ended"))?
             .map_err(|e| anyhow!(e))
+    }
+
+    /// Drive the device's authentication / binding flow. Pass `None` to start (or
+    /// to retry after a physical approval), or a PIN when prompted. Returns the
+    /// next [`AuthOutcome`]; loop until `Authed`.
+    pub async fn authenticate(&self, pin: Option<String>) -> Result<AuthOutcome> {
+        let input = match pin {
+            Some(p) => bc::AuthInput::Pin(p),
+            None => bc::AuthInput::None,
+        };
+        match self.run_op(Op::Auth(input)).await? {
+            OpOk::Auth(a) => Ok(a),
+            OpOk::Done => Ok(AuthOutcome::Authed),
+        }
     }
 
     /// Toggle a port or switch by id (`"ac"`, `"charging"`, `"heater"`, ...).
@@ -629,6 +692,7 @@ impl Caps {
             toggle_balancer: c.toggle_balancer,
             set_charge_limit: c.set_charge_limit,
             write_settings: c.write_settings,
+            requires_auth: c.requires_auth,
             controllable: c.controllable,
         }
     }

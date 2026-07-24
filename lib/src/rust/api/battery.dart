@@ -8,9 +8,9 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'battery.freezed.dart';
 
-// These functions are ignored because they are not marked as `pub`: `actor`, `command`, `from_ref`, `publish`, `run_cmd`, `shutdown`
-// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `CmdMsg`, `Wake`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`
+// These functions are ignored because they are not marked as `pub`: `actor`, `command`, `from_ref`, `publish`, `run_cmd`, `run_op`, `shutdown`
+// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `CmdMsg`, `OpOk`, `Op`, `Wake`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`
 
 /// Scan all enabled transports. `probe_serial` is ignored on platforms
 /// without serial backends.
@@ -33,6 +33,11 @@ bool hasSerialSupport() =>
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BatteryConn>>
 abstract class BatteryConn implements RustOpaqueInterface {
+  /// Drive the device's authentication / binding flow. Pass `None` to start (or
+  /// to retry after a physical approval), or a PIN when prompted. Returns the
+  /// next [`AuthOutcome`]; loop until `Authed`.
+  Future<AuthOutcome> authenticate({String? pin});
+
   Caps capabilities();
 
   DeviceInfo info();
@@ -52,6 +57,23 @@ abstract class BatteryConn implements RustOpaqueInterface {
   /// incremental [`StreamEvent::Update`]s (or [`StreamEvent::Error`]). Ends
   /// when Dart cancels the subscription.
   Stream<StreamEvent> watch();
+}
+
+@freezed
+sealed class AuthOutcome with _$AuthOutcome {
+  const AuthOutcome._();
+
+  /// Authenticated and ready.
+  const factory AuthOutcome.authed() = AuthOutcome_Authed;
+
+  /// A physical confirmation is needed on the device (e.g. press & hold the
+  /// power button), then call `authenticate` again.
+  const factory AuthOutcome.pendingApproval({required String message}) =
+      AuthOutcome_PendingApproval;
+
+  /// A PIN/code is required; call `authenticate` again with it.
+  const factory AuthOutcome.pinCode({required String message}) =
+      AuthOutcome_PinCode;
 }
 
 /// A snapshot of device state: free-form, id-addressed collections.
@@ -107,6 +129,7 @@ class Caps {
   final bool toggleBalancer;
   final bool setChargeLimit;
   final bool writeSettings;
+  final bool requiresAuth;
   final bool controllable;
 
   const Caps({
@@ -121,6 +144,7 @@ class Caps {
     required this.toggleBalancer,
     required this.setChargeLimit,
     required this.writeSettings,
+    required this.requiresAuth,
     required this.controllable,
   });
 
@@ -137,6 +161,7 @@ class Caps {
       toggleBalancer.hashCode ^
       setChargeLimit.hashCode ^
       writeSettings.hashCode ^
+      requiresAuth.hashCode ^
       controllable.hashCode;
 
   @override
@@ -155,6 +180,7 @@ class Caps {
           toggleBalancer == other.toggleBalancer &&
           setChargeLimit == other.setChargeLimit &&
           writeSettings == other.writeSettings &&
+          requiresAuth == other.requiresAuth &&
           controllable == other.controllable;
 }
 

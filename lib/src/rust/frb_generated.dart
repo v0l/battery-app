@@ -66,7 +66,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.12.0';
 
   @override
-  int get rustContentHash => 1173176299;
+  int get rustContentHash => -1849242162;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -78,6 +78,11 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
+  Future<AuthOutcome> crateApiBatteryBatteryConnAuthenticate({
+    required BatteryConn that,
+    String? pin,
+  });
+
   Caps crateApiBatteryBatteryConnCapabilities({required BatteryConn that});
 
   DeviceInfo crateApiBatteryBatteryConnInfo({required BatteryConn that});
@@ -132,6 +137,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
+  Future<AuthOutcome> crateApiBatteryBatteryConnAuthenticate({
+    required BatteryConn that,
+    String? pin,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBatteryConn(
+            that,
+            serializer,
+          );
+          sse_encode_opt_String(pin, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 1,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_auth_outcome,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiBatteryBatteryConnAuthenticateConstMeta,
+        argValues: [that, pin],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiBatteryBatteryConnAuthenticateConstMeta =>
+      const TaskConstMeta(
+        debugName: "BatteryConn_authenticate",
+        argNames: ["that", "pin"],
+      );
+
+  @override
   Caps crateApiBatteryBatteryConnCapabilities({required BatteryConn that}) {
     return handler.executeSync(
       SyncTask(
@@ -141,7 +184,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_caps,
@@ -170,7 +213,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_device_info,
@@ -205,7 +248,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 3,
+            funcId: 4,
             port: port_,
           );
         },
@@ -236,7 +279,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             that,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_battery_status,
@@ -271,7 +314,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 5,
+            funcId: 6,
             port: port_,
           );
         },
@@ -310,7 +353,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 6,
+              funcId: 7,
               port: port_,
             );
           },
@@ -347,7 +390,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 7,
+            funcId: 8,
             port: port_,
           );
         },
@@ -380,7 +423,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 8,
+            funcId: 9,
             port: port_,
           );
         },
@@ -407,7 +450,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 9)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 10)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_bool,
@@ -432,7 +475,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 10,
+            funcId: 11,
             port: port_,
           );
         },
@@ -503,6 +546,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   String dco_decode_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as String;
+  }
+
+  @protected
+  AuthOutcome dco_decode_auth_outcome(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return AuthOutcome_Authed();
+      case 1:
+        return AuthOutcome_PendingApproval(message: dco_decode_String(raw[1]));
+      case 2:
+        return AuthOutcome_PinCode(message: dco_decode_String(raw[1]));
+      default:
+        throw Exception("unreachable");
+    }
   }
 
   @protected
@@ -597,8 +655,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Caps dco_decode_caps(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 12)
-      throw Exception('unexpected arr length: expect 12 but see ${arr.length}');
+    if (arr.length != 13)
+      throw Exception('unexpected arr length: expect 13 but see ${arr.length}');
     return Caps(
       readBasic: dco_decode_bool(arr[0]),
       readCells: dco_decode_bool(arr[1]),
@@ -611,7 +669,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       toggleBalancer: dco_decode_bool(arr[8]),
       setChargeLimit: dco_decode_bool(arr[9]),
       writeSettings: dco_decode_bool(arr[10]),
-      controllable: dco_decode_bool(arr[11]),
+      requiresAuth: dco_decode_bool(arr[11]),
+      controllable: dco_decode_bool(arr[12]),
     );
   }
 
@@ -987,6 +1046,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  AuthOutcome sse_decode_auth_outcome(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        return AuthOutcome_Authed();
+      case 1:
+        var var_message = sse_decode_String(deserializer);
+        return AuthOutcome_PendingApproval(message: var_message);
+      case 2:
+        var var_message = sse_decode_String(deserializer);
+        return AuthOutcome_PinCode(message: var_message);
+      default:
+        throw UnimplementedError('');
+    }
+  }
+
+  @protected
   BatteryStatus sse_decode_battery_status(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_sensors = sse_decode_list_sensor(deserializer);
@@ -1097,6 +1175,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_toggleBalancer = sse_decode_bool(deserializer);
     var var_setChargeLimit = sse_decode_bool(deserializer);
     var var_writeSettings = sse_decode_bool(deserializer);
+    var var_requiresAuth = sse_decode_bool(deserializer);
     var var_controllable = sse_decode_bool(deserializer);
     return Caps(
       readBasic: var_readBasic,
@@ -1110,6 +1189,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       toggleBalancer: var_toggleBalancer,
       setChargeLimit: var_setChargeLimit,
       writeSettings: var_writeSettings,
+      requiresAuth: var_requiresAuth,
       controllable: var_controllable,
     );
   }
@@ -1601,6 +1681,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_auth_outcome(AuthOutcome self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case AuthOutcome_Authed():
+        sse_encode_i_32(0, serializer);
+      case AuthOutcome_PendingApproval(message: final message):
+        sse_encode_i_32(1, serializer);
+        sse_encode_String(message, serializer);
+      case AuthOutcome_PinCode(message: final message):
+        sse_encode_i_32(2, serializer);
+        sse_encode_String(message, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_battery_status(BatteryStatus self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_list_sensor(self.sensors, serializer);
@@ -1712,6 +1807,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self.toggleBalancer, serializer);
     sse_encode_bool(self.setChargeLimit, serializer);
     sse_encode_bool(self.writeSettings, serializer);
+    sse_encode_bool(self.requiresAuth, serializer);
     sse_encode_bool(self.controllable, serializer);
   }
 
@@ -2078,6 +2174,12 @@ class BatteryConnImpl extends RustOpaque implements BatteryConn {
     rustArcDecrementStrongCountPtr:
         RustLib.instance.api.rust_arc_decrement_strong_count_BatteryConnPtr,
   );
+
+  /// Drive the device's authentication / binding flow. Pass `None` to start (or
+  /// to retry after a physical approval), or a PIN when prompted. Returns the
+  /// next [`AuthOutcome`]; loop until `Authed`.
+  Future<AuthOutcome> authenticate({String? pin}) => RustLib.instance.api
+      .crateApiBatteryBatteryConnAuthenticate(that: this, pin: pin);
 
   Caps capabilities() =>
       RustLib.instance.api.crateApiBatteryBatteryConnCapabilities(that: this);

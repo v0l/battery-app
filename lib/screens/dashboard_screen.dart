@@ -91,6 +91,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String? _error;
   StreamSubscription<StreamEvent>? _sub;
   bool _busy = false;
+  bool _authed = false;
   late final Caps _caps = widget.conn.capabilities();
 
   /// Optimistic overrides for switch/port ids, cleared once the live state
@@ -146,7 +147,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _busy = true;
     });
     try {
-      await widget.conn.toggle(id: id, on_: on);
+      await _withAuthRetry(() => widget.conn.toggle(id: id, on_: on));
     } catch (e) {
       if (mounted) {
         setState(() => _pending.remove(id));
@@ -161,7 +162,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _set(String id, String value) async {
     setState(() => _busy = true);
     try {
-      await widget.conn.set_(id: id, value: value);
+      await _withAuthRetry(() => widget.conn.set_(id: id, value: value));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
@@ -170,6 +171,93 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  /// Run a write; if it fails because the device isn't bound, drive the
+  /// auth/binding flow and retry once.
+  Future<void> _withAuthRetry(Future<void> Function() write) async {
+    try {
+      await write();
+    } catch (e) {
+      final s = '$e'.toLowerCase();
+      final needsAuth =
+          _caps.requiresAuth && (s.contains('bound') || s.contains('authenticate'));
+      if (!needsAuth || !await _ensureAuthed()) rethrow;
+      await write(); // retry once, now authenticated
+    }
+  }
+
+  /// Drive the device's authentication / binding flow with dialogs. Returns true
+  /// once authenticated.
+  Future<bool> _ensureAuthed() async {
+    if (_authed) return true;
+    String? pin;
+    while (true) {
+      final AuthOutcome outcome;
+      try {
+        outcome = await widget.conn.authenticate(pin: pin);
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Auth failed: $e')));
+        }
+        return false;
+      }
+      switch (outcome) {
+        case AuthOutcome_Authed():
+          _authed = true;
+          return true;
+        case AuthOutcome_PendingApproval(:final message):
+          if (!mounted) return false;
+          final retry = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              icon: const Icon(Icons.touch_app),
+              title: const Text('Confirm on device'),
+              content: Text(message),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: const Text('Cancel')),
+                FilledButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: const Text('Retry')),
+              ],
+            ),
+          );
+          if (retry != true) return false;
+          pin = null;
+        case AuthOutcome_PinCode(:final message):
+          if (!mounted) return false;
+          pin = await _promptPin(message);
+          if (pin == null) return false;
+      }
+    }
+  }
+
+  Future<String?> _promptPin(String message) async {
+    final ctrl = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Enter code'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(message),
+            const SizedBox(height: 12),
+            TextField(controller: ctrl, autofocus: true, keyboardType: TextInputType.number),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
+              child: const Text('OK')),
+        ],
+      ),
+    );
   }
 
   /// Whether this switch is toggleable *at all* (capability-based). While a

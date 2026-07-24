@@ -12,6 +12,336 @@ part of 'battery.dart';
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
+mixin _$AuthOutcome {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthOutcome);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'AuthOutcome()';
+}
+
+
+}
+
+/// @nodoc
+class $AuthOutcomeCopyWith<$Res>  {
+$AuthOutcomeCopyWith(AuthOutcome _, $Res Function(AuthOutcome) __);
+}
+
+
+/// Adds pattern-matching-related methods to [AuthOutcome].
+extension AuthOutcomePatterns on AuthOutcome {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( AuthOutcome_Authed value)?  authed,TResult Function( AuthOutcome_PendingApproval value)?  pendingApproval,TResult Function( AuthOutcome_PinCode value)?  pinCode,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case AuthOutcome_Authed() when authed != null:
+return authed(_that);case AuthOutcome_PendingApproval() when pendingApproval != null:
+return pendingApproval(_that);case AuthOutcome_PinCode() when pinCode != null:
+return pinCode(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( AuthOutcome_Authed value)  authed,required TResult Function( AuthOutcome_PendingApproval value)  pendingApproval,required TResult Function( AuthOutcome_PinCode value)  pinCode,}){
+final _that = this;
+switch (_that) {
+case AuthOutcome_Authed():
+return authed(_that);case AuthOutcome_PendingApproval():
+return pendingApproval(_that);case AuthOutcome_PinCode():
+return pinCode(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( AuthOutcome_Authed value)?  authed,TResult? Function( AuthOutcome_PendingApproval value)?  pendingApproval,TResult? Function( AuthOutcome_PinCode value)?  pinCode,}){
+final _that = this;
+switch (_that) {
+case AuthOutcome_Authed() when authed != null:
+return authed(_that);case AuthOutcome_PendingApproval() when pendingApproval != null:
+return pendingApproval(_that);case AuthOutcome_PinCode() when pinCode != null:
+return pinCode(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  authed,TResult Function( String message)?  pendingApproval,TResult Function( String message)?  pinCode,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case AuthOutcome_Authed() when authed != null:
+return authed();case AuthOutcome_PendingApproval() when pendingApproval != null:
+return pendingApproval(_that.message);case AuthOutcome_PinCode() when pinCode != null:
+return pinCode(_that.message);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  authed,required TResult Function( String message)  pendingApproval,required TResult Function( String message)  pinCode,}) {final _that = this;
+switch (_that) {
+case AuthOutcome_Authed():
+return authed();case AuthOutcome_PendingApproval():
+return pendingApproval(_that.message);case AuthOutcome_PinCode():
+return pinCode(_that.message);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  authed,TResult? Function( String message)?  pendingApproval,TResult? Function( String message)?  pinCode,}) {final _that = this;
+switch (_that) {
+case AuthOutcome_Authed() when authed != null:
+return authed();case AuthOutcome_PendingApproval() when pendingApproval != null:
+return pendingApproval(_that.message);case AuthOutcome_PinCode() when pinCode != null:
+return pinCode(_that.message);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class AuthOutcome_Authed extends AuthOutcome {
+  const AuthOutcome_Authed(): super._();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthOutcome_Authed);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'AuthOutcome.authed()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class AuthOutcome_PendingApproval extends AuthOutcome {
+  const AuthOutcome_PendingApproval({required this.message}): super._();
+  
+
+ final  String message;
+
+/// Create a copy of AuthOutcome
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AuthOutcome_PendingApprovalCopyWith<AuthOutcome_PendingApproval> get copyWith => _$AuthOutcome_PendingApprovalCopyWithImpl<AuthOutcome_PendingApproval>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthOutcome_PendingApproval&&(identical(other.message, message) || other.message == message));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,message);
+
+@override
+String toString() {
+  return 'AuthOutcome.pendingApproval(message: $message)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $AuthOutcome_PendingApprovalCopyWith<$Res> implements $AuthOutcomeCopyWith<$Res> {
+  factory $AuthOutcome_PendingApprovalCopyWith(AuthOutcome_PendingApproval value, $Res Function(AuthOutcome_PendingApproval) _then) = _$AuthOutcome_PendingApprovalCopyWithImpl;
+@useResult
+$Res call({
+ String message
+});
+
+
+
+
+}
+/// @nodoc
+class _$AuthOutcome_PendingApprovalCopyWithImpl<$Res>
+    implements $AuthOutcome_PendingApprovalCopyWith<$Res> {
+  _$AuthOutcome_PendingApprovalCopyWithImpl(this._self, this._then);
+
+  final AuthOutcome_PendingApproval _self;
+  final $Res Function(AuthOutcome_PendingApproval) _then;
+
+/// Create a copy of AuthOutcome
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? message = null,}) {
+  return _then(AuthOutcome_PendingApproval(
+message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class AuthOutcome_PinCode extends AuthOutcome {
+  const AuthOutcome_PinCode({required this.message}): super._();
+  
+
+ final  String message;
+
+/// Create a copy of AuthOutcome
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AuthOutcome_PinCodeCopyWith<AuthOutcome_PinCode> get copyWith => _$AuthOutcome_PinCodeCopyWithImpl<AuthOutcome_PinCode>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthOutcome_PinCode&&(identical(other.message, message) || other.message == message));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,message);
+
+@override
+String toString() {
+  return 'AuthOutcome.pinCode(message: $message)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $AuthOutcome_PinCodeCopyWith<$Res> implements $AuthOutcomeCopyWith<$Res> {
+  factory $AuthOutcome_PinCodeCopyWith(AuthOutcome_PinCode value, $Res Function(AuthOutcome_PinCode) _then) = _$AuthOutcome_PinCodeCopyWithImpl;
+@useResult
+$Res call({
+ String message
+});
+
+
+
+
+}
+/// @nodoc
+class _$AuthOutcome_PinCodeCopyWithImpl<$Res>
+    implements $AuthOutcome_PinCodeCopyWith<$Res> {
+  _$AuthOutcome_PinCodeCopyWithImpl(this._self, this._then);
+
+  final AuthOutcome_PinCode _self;
+  final $Res Function(AuthOutcome_PinCode) _then;
+
+/// Create a copy of AuthOutcome
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? message = null,}) {
+  return _then(AuthOutcome_PinCode(
+message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+/// @nodoc
 mixin _$SettingKind {
 
 

@@ -52,6 +52,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String dco_decode_String(dynamic raw);
 
   @protected
+  AuthOutcome dco_decode_auth_outcome(dynamic raw);
+
+  @protected
   BatteryStatus dco_decode_battery_status(dynamic raw);
 
   @protected
@@ -223,6 +226,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   String sse_decode_String(SseDeserializer deserializer);
+
+  @protected
+  AuthOutcome sse_decode_auth_outcome(SseDeserializer deserializer);
 
   @protected
   BatteryStatus sse_decode_battery_status(SseDeserializer deserializer);
@@ -413,6 +419,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_String(String self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_auth_outcome(AuthOutcome self, SseSerializer serializer);
 
   @protected
   void sse_encode_battery_status(BatteryStatus self, SseSerializer serializer);
