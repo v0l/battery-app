@@ -107,6 +107,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         if (mounted) setState(() => _error = '$e');
       },
     );
+    // On the secure channel (Anker gen-2) the device gates telemetry behind the
+    // auth/bind, so authenticate up front — data only flows once bound.
+    if (_caps.requiresAuth) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _ensureAuthed());
+    }
   }
 
   @override
@@ -260,6 +265,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  /// App-bar actions: a re-pair button for auth-gated devices.
+  List<Widget> _authActions() => _caps.requiresAuth
+      ? [
+          IconButton(
+            tooltip: 'Pair device',
+            icon: const Icon(Icons.key),
+            onPressed: _reauth,
+          )
+        ]
+      : const [];
+
+  /// Re-run the auth/binding flow from a UI action (app-bar button).
+  Future<void> _reauth() async {
+    _authed = false;
+    if (await _ensureAuthed() && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Authenticated — loading data…')));
+    }
+  }
+
   /// Whether this switch is toggleable *at all* (capability-based). While a
   /// command is in flight the tile stays a switch — merely disabled — so the
   /// row doesn't visually flip to the read-only badge on every tap.
@@ -275,12 +300,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     if (!_seeded) {
+      final needBind = _caps.requiresAuth && !_authed;
       return Scaffold(
-        appBar: AppBar(title: Text(widget.device.label)),
+        appBar: AppBar(title: Text(widget.device.label), actions: _authActions()),
         body: Center(
           child: _error != null
               ? Text(_error!)
-              : const CircularProgressIndicator(),
+              : needBind
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.lock_outline, size: 48),
+                        const SizedBox(height: 12),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 32),
+                          child: Text(
+                            'This device must be paired before it shares data.',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        FilledButton.icon(
+                          onPressed: _reauth,
+                          icon: const Icon(Icons.touch_app),
+                          label: const Text('Pair device'),
+                        ),
+                      ],
+                    )
+                  : const CircularProgressIndicator(),
         ),
       );
     }
@@ -290,7 +337,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _live.sensors.values.where((s) => s.id != 'soc').toList();
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.device.label)),
+      appBar: AppBar(title: Text(widget.device.label), actions: _authActions()),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
