@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:battery_app/bluetooth.dart';
 import 'package:battery_app/src/rust/api/battery.dart';
 import 'package:battery_app/screens/dashboard_screen.dart';
 
@@ -31,15 +32,69 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         });
         return;
       }
+      // Bluetooth radio must be on, or every backend scan fails with
+      // "No Bluetooth adapter available".
+      if (!await Bluetooth.isEnabled()) {
+        if (mounted) setState(() => _scanning = false);
+        await _promptEnableBluetooth();
+        return;
+      }
       final devices = await discoverDevices(
         bleSecs: BigInt.from(6),
         probeSerial: hasSerialSupport(),
       );
       if (mounted) setState(() => _devices = devices);
     } catch (e) {
+      // droidplug reports BT-off as a missing adapter; surface the prompt.
+      if (mounted && '$e'.toLowerCase().contains('no bluetooth adapter')) {
+        setState(() => _scanning = false);
+        await _promptEnableBluetooth();
+        return;
+      }
       if (mounted) setState(() => _error = '$e');
     } finally {
       if (mounted) setState(() => _scanning = false);
+    }
+  }
+
+  /// Show a prompt to turn Bluetooth on; if accepted, fire the system enable
+  /// dialog and re-scan.
+  Future<void> _promptEnableBluetooth() async {
+    if (!mounted) return;
+    final enable = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(Icons.bluetooth_disabled),
+        title: const Text('Bluetooth is off'),
+        content: const Text(
+            'Turn on Bluetooth to scan for nearby batteries.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Not now'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Turn on'),
+          ),
+        ],
+      ),
+    );
+    if (enable != true) {
+      if (mounted) setState(() => _error = 'Bluetooth is off.');
+      return;
+    }
+    final ok = await Bluetooth.requestEnable();
+    if (!ok) {
+      if (mounted) {
+        setState(() => _error = 'This device has no Bluetooth.');
+      }
+      return;
+    }
+    // Give the radio a moment to come up, then scan again.
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted && await Bluetooth.isEnabled()) {
+      await _scan();
     }
   }
 
