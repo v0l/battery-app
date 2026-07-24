@@ -265,16 +265,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  /// App-bar actions: a re-pair button for auth-gated devices.
+  /// App-bar actions: a pairing menu for auth-gated devices.
   List<Widget> _authActions() => _caps.requiresAuth
       ? [
-          IconButton(
-            tooltip: 'Pair device',
+          PopupMenuButton<String>(
             icon: const Icon(Icons.key),
-            onPressed: _reauth,
+            tooltip: 'Pairing',
+            onSelected: (v) {
+              if (v == 'pair') _reauth();
+              if (v == 'forget') _forgetPairing();
+            },
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: 'pair', child: Text('Pair device')),
+              PopupMenuItem(value: 'forget', child: Text('Forget pairing')),
+            ],
           )
         ]
       : const [];
+
+  /// Delete the saved pairing so the next connect re-runs the flow.
+  Future<void> _forgetPairing() async {
+    try {
+      await widget.conn.forgetPairing();
+      _authed = false;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text(
+                'Pairing forgotten. Factory-reset the unit to unbind it on the device too.')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Forget failed: $e')));
+      }
+    }
+  }
 
   /// Re-run the auth/binding flow from a UI action (app-bar button).
   Future<void> _reauth() async {

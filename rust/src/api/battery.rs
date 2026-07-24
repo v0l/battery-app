@@ -348,10 +348,11 @@ impl From<bc::AuthState> for AuthOutcome {
     }
 }
 
-/// An operation for the actor: a control command or an auth step.
+/// An operation for the actor: a control command, an auth step, or forget-auth.
 enum Op {
     Cmd(bc::Command),
     Auth(bc::AuthInput),
+    Forget,
 }
 
 /// The successful result of an [`Op`].
@@ -440,6 +441,7 @@ async fn run_cmd(battery: &mut Box<dyn bc::Battery>, msg: CmdMsg) {
             Ok(res) => res.map(|st| OpOk::Auth(st.into())).map_err(|e| e.to_string()),
             Err(_) => Err("authentication timed out".to_string()),
         },
+        Op::Forget => battery.forget_auth().await.map(|_| OpOk::Done).map_err(|e| e.to_string()),
     };
     let _ = msg.ack.send(r);
 }
@@ -591,6 +593,12 @@ impl BatteryConn {
             OpOk::Auth(a) => Ok(a),
             OpOk::Done => Ok(AuthOutcome::Authed),
         }
+    }
+
+    /// Forget the saved pairing so the next connect re-runs the flow. The
+    /// on-device bond persists until the device itself is reset.
+    pub async fn forget_pairing(&self) -> Result<()> {
+        self.run_op(Op::Forget).await.map(|_| ())
     }
 
     /// Toggle a port or switch by id (`"ac"`, `"charging"`, `"heater"`, ...).

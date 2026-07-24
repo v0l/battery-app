@@ -40,6 +40,10 @@ abstract class BatteryConn implements RustOpaqueInterface {
 
   Caps capabilities();
 
+  /// Forget the saved pairing so the next connect re-runs the flow. The
+  /// on-device bond persists until the device itself is reset.
+  Future<void> forgetPairing();
+
   DeviceInfo info();
 
   /// Set a named value (`"charge_limit"` = `"80"`, ...).
