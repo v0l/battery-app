@@ -14,11 +14,11 @@ futures-util = "0.3"
 
 # Desktop: every host-buildable backend (BLE + serial).
 [target.'cfg(not(any(target_os = "ios", target_os = "android")))'.dependencies]
-battery_control = { git = "https://github.com/v0l/battery-control", rev = "00ca21b6a3e9f0cd1f91128fafa4720776c08a26", default-features = false, features = ["full"] }
+battery_control = { git = "https://github.com/v0l/battery-control", rev = "4d23214bc750c4a22b205dac79f50ab3bc82ea89", default-features = false, features = ["full"] }
 
 # Mobile: BLE-only backends (no serial/CAN on iOS; Android serial needs USB-host APIs).
 [target.'cfg(any(target_os = "ios", target_os = "android"))'.dependencies]
-battery_control = { git = "https://github.com/v0l/battery-control", rev = "00ca21b6a3e9f0cd1f91128fafa4720776c08a26", default-features = false, features = ["anker", "jk-ble"] }
+battery_control = { git = "https://github.com/v0l/battery-control", rev = "4d23214bc750c4a22b205dac79f50ab3bc82ea89", default-features = false, features = ["anker", "jk-ble", "jbd-ble", "sok", "renogy", "bluetti", "jackery", "ecoflow"] }
 
 # Android: btleplug's droidplug must be initialized with a JNIEnv from the app
 # classloader (see src/android_init.rs, called from MainActivity).

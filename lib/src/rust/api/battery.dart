@@ -329,6 +329,7 @@ enum SensorUnit {
   ampHour,
   hour,
   second,
+  minute,
   count,
 }
 

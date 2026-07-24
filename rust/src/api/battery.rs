@@ -150,6 +150,7 @@ pub enum SensorUnit {
     AmpHour,
     Hour,
     Second,
+    Minute,
     Count,
 }
 
@@ -164,6 +165,7 @@ impl From<bc::Unit> for SensorUnit {
             bc::Unit::AmpHour => SensorUnit::AmpHour,
             bc::Unit::Hour => SensorUnit::Hour,
             bc::Unit::Second => SensorUnit::Second,
+            bc::Unit::Minute => SensorUnit::Minute,
             bc::Unit::Count => SensorUnit::Count,
         }
     }

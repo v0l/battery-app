@@ -63,6 +63,7 @@ String unitSymbol(SensorUnit u) => switch (u) {
       SensorUnit.ampHour => 'Ah',
       SensorUnit.hour => 'h',
       SensorUnit.second => 's',
+      SensorUnit.minute => 'min',
       SensorUnit.count => '',
     };
 

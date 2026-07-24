@@ -930,7 +930,8 @@ impl SseDecode for crate::api::battery::SensorUnit {
             5 => crate::api::battery::SensorUnit::AmpHour,
             6 => crate::api::battery::SensorUnit::Hour,
             7 => crate::api::battery::SensorUnit::Second,
-            8 => crate::api::battery::SensorUnit::Count,
+            8 => crate::api::battery::SensorUnit::Minute,
+            9 => crate::api::battery::SensorUnit::Count,
             _ => unreachable!("Invalid variant for SensorUnit: {}", inner),
         };
     }
@@ -1381,7 +1382,8 @@ impl flutter_rust_bridge::IntoDart for crate::api::battery::SensorUnit {
             Self::AmpHour => 5.into_dart(),
             Self::Hour => 6.into_dart(),
             Self::Second => 7.into_dart(),
-            Self::Count => 8.into_dart(),
+            Self::Minute => 8.into_dart(),
+            Self::Count => 9.into_dart(),
             _ => unreachable!(),
         }
     }
@@ -1904,7 +1906,8 @@ impl SseEncode for crate::api::battery::SensorUnit {
                 crate::api::battery::SensorUnit::AmpHour => 5,
                 crate::api::battery::SensorUnit::Hour => 6,
                 crate::api::battery::SensorUnit::Second => 7,
-                crate::api::battery::SensorUnit::Count => 8,
+                crate::api::battery::SensorUnit::Minute => 8,
+                crate::api::battery::SensorUnit::Count => 9,
                 _ => {
                     unimplemented!("");
                 }
