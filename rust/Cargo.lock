@@ -258,6 +258,7 @@ checksum = "2af50177e190e07a26ab74f8b1efbfe2ef87da2116221318cb1c2e82baf7de06"
 [[package]]
 name = "battery_control"
 version = "0.1.0"
+source = "git+https://github.com/v0l/battery-control?rev=0b624cbebd0bd0380af2c6b16c442baf12c1f3f0#0b624cbebd0bd0380af2c6b16c442baf12c1f3f0"
 dependencies = [
  "anker_solix",
  "async-trait",
@@ -1468,9 +1469,9 @@ dependencies = [
 
 [[package]]
 name = "jk_bms"
-version = "0.3.3"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a584693ffae9b074a2c41039fe75fcd5c59e7a1ca2cc579834cfc81d40b2d9cc"
+checksum = "6041479946c3adab6fd6ed3d33b5e211418392e2db6b4f1402e567581fb2da35"
 dependencies = [
  "async-trait",
  "btleplug",
