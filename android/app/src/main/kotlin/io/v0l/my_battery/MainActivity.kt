@@ -1,4 +1,4 @@
-package com.example.battery_app
+package io.v0l.my_battery
 
 import android.os.Bundle
 import io.flutter.embedding.android.FlutterActivity

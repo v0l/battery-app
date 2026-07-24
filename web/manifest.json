@@ -1,6 +1,6 @@
 {
-    "name": "battery_app",
-    "short_name": "battery_app",
+    "name": "MyBattery",
+    "short_name": "MyBattery",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

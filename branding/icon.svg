@@ -1,0 +1,47 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Tile background: green-black, lit from top-left -->
+    <linearGradient id="tile" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#12241C"/>
+      <stop offset="1" stop-color="#0B1512"/>
+    </linearGradient>
+    <!-- Charged pack: brightest at the bottom (full), deepening upward -->
+    <linearGradient id="charge" x1="512" y1="792" x2="512" y2="232" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#35E58C"/>
+      <stop offset="0.55" stop-color="#21D07A"/>
+      <stop offset="1" stop-color="#12A863"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.46" r="0.5" gradientUnits="objectBoundingBox">
+      <stop stop-color="#21D07A" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#21D07A" stop-opacity="0"/>
+    </radialGradient>
+    <!-- The bolt silhouette, reused as art and as a clip for the cell slices -->
+    <path id="bolt"
+      d="M604 232 L360 566 Q352 577 366 577 L500 577 L440 786 Q436 800 449 790 L676 468 Q685 457 671 457 L560 457 L620 246 Q625 231 604 232 Z"/>
+    <clipPath id="boltClip"><use href="#bolt"/></clipPath>
+  </defs>
+
+  <!-- Tile -->
+  <rect width="1024" height="1024" rx="224" fill="url(#tile)"/>
+  <!-- hairline inner bezel for depth -->
+  <rect x="4" y="4" width="1016" height="1016" rx="220" fill="none" stroke="#2B4A3B" stroke-opacity="0.5" stroke-width="2"/>
+
+  <!-- ambient energy glow behind the mark -->
+  <circle cx="512" cy="500" r="360" fill="url(#glow)"/>
+
+  <!-- The mark: a bolt made of stacked cells -->
+  <g>
+    <use href="#bolt" fill="url(#charge)"/>
+    <!-- soft outer edge to round the corners -->
+    <use href="#bolt" fill="none" stroke="#35E58C" stroke-width="10"
+         stroke-opacity="0.35" stroke-linejoin="round"/>
+
+    <!-- cell-gap slices: cut two seams across the bolt so it reads as a pack -->
+    <g clip-path="url(#boltClip)">
+      <rect x="330" y="430" width="380" height="22" rx="11" fill="#0B1512"/>
+      <rect x="330" y="536" width="380" height="22" rx="11" fill="#0B1512"/>
+      <!-- top-left specular highlight on the charged faces -->
+      <path d="M604 236 L372 560 L470 560 L560 300 Z" fill="#6EF3A5" fill-opacity="0.18"/>
+    </g>
+  </g>
+</svg>

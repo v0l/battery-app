@@ -19,9 +19,11 @@ use std::sync::OnceLock;
 
 static VM: OnceLock<JavaVM> = OnceLock::new();
 
-/// Called from `com.example.battery_app.MainActivity.initBtleplug()`.
+/// Called from `io.v0l.my_battery.MainActivity.initBtleplug()`.
+/// The JNI symbol encodes the package/class: `_1` escapes the `_` in
+/// `my_battery`.
 #[no_mangle]
-pub extern "system" fn Java_com_example_battery_1app_MainActivity_initBtleplug(
+pub extern "system" fn Java_io_v0l_my_1battery_MainActivity_initBtleplug(
     env: JNIEnv,
     _class: JClass,
 ) {
