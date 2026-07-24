@@ -1468,9 +1468,9 @@ dependencies = [
 
 [[package]]
 name = "jk_bms"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b222ca33368d1843a7ec2909265a1538175f8db088db2f93accebb789d2ea9e"
+checksum = "a584693ffae9b074a2c41039fe75fcd5c59e7a1ca2cc579834cfc81d40b2d9cc"
 dependencies = [
  "async-trait",
  "btleplug",

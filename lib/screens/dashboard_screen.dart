@@ -218,10 +218,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 12),
             _ReadingsCard(sensors: otherSensors),
           ],
-          if (_live.alarms.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            _AlarmsCard(alarms: _live.alarms),
-          ],
+          const SizedBox(height: 12),
+          _AlarmsCard(alarms: _live.alarms),
           if (_live.ports.isNotEmpty) ...[
             const SizedBox(height: 12),
             _PortsCard(
@@ -334,18 +332,26 @@ class _AlarmsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final active = alarms.isNotEmpty;
     return Card(
-      color: Theme.of(context).colorScheme.errorContainer,
+      color: active ? Theme.of(context).colorScheme.errorContainer : null,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(children: [
-              Icon(Icons.warning),
-              SizedBox(width: 8),
-              Text('Alarms', style: TextStyle(fontWeight: FontWeight.bold)),
+            Row(children: [
+              Icon(active ? Icons.warning : Icons.verified_outlined),
+              const SizedBox(width: 8),
+              const Text('Alarms', style: TextStyle(fontWeight: FontWeight.bold)),
             ]),
+            if (!active)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text('No active alarms',
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              ),
             for (final a in alarms) Text('• $a'),
           ],
         ),
