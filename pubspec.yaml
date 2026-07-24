@@ -55,6 +55,20 @@ dev_dependencies:
   freezed: ^3.2.3
   build_runner: ^2.15.1
   flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.4
+
+# Native splash screen: `dart run flutter_native_splash:create`.
+# Brand-dark background with the segmented-bolt mark centered.
+flutter_native_splash:
+  color: "#0B1512"
+  image: branding/splash-1024.png
+  color_dark: "#0B1512"
+  image_dark: branding/splash-1024.png
+  android_12:
+    color: "#0B1512"
+    image: branding/splash-android12.png
+    color_dark: "#0B1512"
+    image_dark: branding/splash-android12.png
 
 # App icon generation: `dart run flutter_launcher_icons`.
 # Source art lives in branding/ (rendered from the SVGs there).

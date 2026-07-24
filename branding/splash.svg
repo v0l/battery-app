@@ -1,0 +1,30 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="charge" x1="512" y1="792" x2="512" y2="232" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#35E58C"/>
+      <stop offset="0.55" stop-color="#21D07A"/>
+      <stop offset="1" stop-color="#12A863"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5" gradientUnits="objectBoundingBox">
+      <stop stop-color="#21D07A" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#21D07A" stop-opacity="0"/>
+    </radialGradient>
+    <path id="bolt"
+      d="M604 232 L360 566 Q352 577 366 577 L500 577 L440 786 Q436 800 449 790 L676 468 Q685 457 671 457 L560 457 L620 246 Q625 231 604 232 Z"/>
+    <clipPath id="boltClip"><use href="#bolt"/></clipPath>
+  </defs>
+
+  <!-- Splash logo: mark centered on transparent, moderate size (~46%) with a
+       soft glow. The launcher/native splash fills the rest with #0B1512. -->
+  <g transform="translate(512 512) scale(0.46) translate(-512 -512)">
+    <circle cx="512" cy="509" r="360" fill="url(#glow)"/>
+    <use href="#bolt" fill="url(#charge)"/>
+    <use href="#bolt" fill="none" stroke="#35E58C" stroke-width="10"
+         stroke-opacity="0.35" stroke-linejoin="round"/>
+    <g clip-path="url(#boltClip)">
+      <rect x="330" y="430" width="380" height="22" rx="11" fill="#0B1512"/>
+      <rect x="330" y="536" width="380" height="22" rx="11" fill="#0B1512"/>
+      <path d="M604 236 L372 560 L470 560 L560 300 Z" fill="#6EF3A5" fill-opacity="0.18"/>
+    </g>
+  </g>
+</svg>
