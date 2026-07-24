@@ -10,7 +10,7 @@ part 'battery.freezed.dart';
 
 // These functions are ignored because they are not marked as `pub`: `actor`, `command`, `from_ref`, `publish`, `run_cmd`, `run_op`, `shutdown`
 // These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `CmdMsg`, `OpOk`, `Op`, `Wake`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`, `from`
 
 /// Scan all enabled transports. `probe_serial` is ignored on platforms
 /// without serial backends.
@@ -412,9 +412,30 @@ sealed class SettingKind with _$SettingKind {
     double? step,
     required String unit,
   }) = SettingKind_Number;
-  const factory SettingKind.enum_({required List<String> options}) =
+
+  /// The valid inputs for this setting (value + display label).
+  const factory SettingKind.enum_({required List<SettingOptionDart> options}) =
       SettingKind_Enum;
   const factory SettingKind.text() = SettingKind_Text;
+}
+
+/// One allowed choice for an enum setting.
+class SettingOptionDart {
+  final String value;
+  final String label;
+
+  const SettingOptionDart({required this.value, required this.label});
+
+  @override
+  int get hashCode => value.hashCode ^ label.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SettingOptionDart &&
+          runtimeType == other.runtimeType &&
+          value == other.value &&
+          label == other.label;
 }
 
 @freezed

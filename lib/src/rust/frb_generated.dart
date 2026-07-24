@@ -823,6 +823,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<SettingOptionDart> dco_decode_list_setting_option_dart(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_setting_option_dart).toList();
+  }
+
+  @protected
   List<Switch> dco_decode_list_switch(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_switch).toList();
@@ -929,12 +935,26 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           unit: dco_decode_String(raw[4]),
         );
       case 2:
-        return SettingKind_Enum(options: dco_decode_list_String(raw[1]));
+        return SettingKind_Enum(
+          options: dco_decode_list_setting_option_dart(raw[1]),
+        );
       case 3:
         return SettingKind_Text();
       default:
         throw Exception("unreachable");
     }
+  }
+
+  @protected
+  SettingOptionDart dco_decode_setting_option_dart(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return SettingOptionDart(
+      value: dco_decode_String(arr[0]),
+      label: dco_decode_String(arr[1]),
+    );
   }
 
   @protected
@@ -1386,6 +1406,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<SettingOptionDart> sse_decode_list_setting_option_dart(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SettingOptionDart>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_setting_option_dart(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<Switch> sse_decode_list_switch(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -1539,13 +1573,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           unit: var_unit,
         );
       case 2:
-        var var_options = sse_decode_list_String(deserializer);
+        var var_options = sse_decode_list_setting_option_dart(deserializer);
         return SettingKind_Enum(options: var_options);
       case 3:
         return SettingKind_Text();
       default:
         throw UnimplementedError('');
     }
+  }
+
+  @protected
+  SettingOptionDart sse_decode_setting_option_dart(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_value = sse_decode_String(deserializer);
+    var var_label = sse_decode_String(deserializer);
+    return SettingOptionDart(value: var_value, label: var_label);
   }
 
   @protected
@@ -1979,6 +2023,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_setting_option_dart(
+    List<SettingOptionDart> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_setting_option_dart(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_switch(List<Switch> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
@@ -2101,10 +2157,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(unit, serializer);
       case SettingKind_Enum(options: final options):
         sse_encode_i_32(2, serializer);
-        sse_encode_list_String(options, serializer);
+        sse_encode_list_setting_option_dart(options, serializer);
       case SettingKind_Text():
         sse_encode_i_32(3, serializer);
     }
+  }
+
+  @protected
+  void sse_encode_setting_option_dart(
+    SettingOptionDart self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.value, serializer);
+    sse_encode_String(self.label, serializer);
   }
 
   @protected

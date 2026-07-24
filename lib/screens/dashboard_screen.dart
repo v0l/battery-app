@@ -675,6 +675,22 @@ class _SettingsCard extends StatelessWidget {
           onChanged: s.writable && !busy ? (v) => onToggle(s.id, v) : null,
         );
       case SettingValue_Number(:final field0):
+        // Enum settings carry a numeric value but a fixed option list — render a
+        // picker of valid inputs rather than a free number field.
+        if (s.kind case SettingKind_Enum(:final options)) {
+          final cur = _optValue(s.value);
+          final label = options
+              .firstWhere((o) => o.value == cur,
+                  orElse: () => SettingOptionDart(value: cur, label: cur))
+              .label;
+          return ListTile(
+            title: Text(name),
+            trailing: Text(label),
+            onTap: s.writable && !busy
+                ? () => _pickEnum(context, s, options, cur)
+                : null,
+          );
+        }
         final unit = switch (s.kind) {
           SettingKind_Number(:final unit) => unit,
           _ => '',
@@ -697,24 +713,87 @@ class _SettingsCard extends StatelessWidget {
     }
   }
 
+  /// The current enum value as an option string (integer for whole numbers).
+  String _optValue(SettingValue v) => switch (v) {
+        SettingValue_Number(:final field0) =>
+          field0 == field0.roundToDouble() ? field0.toInt().toString() : fmtNum(field0),
+        SettingValue_Text(:final field0) => field0,
+        SettingValue_Bool(:final field0) => field0 ? '1' : '0',
+      };
+
+  /// Pick one of the setting's valid inputs.
+  Future<void> _pickEnum(BuildContext context, Setting s,
+      List<SettingOptionDart> options, String current) async {
+    final chosen = await showDialog<String>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(s.label ?? prettyId(s.id)),
+        children: [
+          for (final o in options)
+            RadioListTile<String>(
+              value: o.value,
+              groupValue: current,
+              title: Text(o.label),
+              onChanged: (v) => Navigator.pop(ctx, v),
+            ),
+        ],
+      ),
+    );
+    if (chosen != null && chosen != current) onSet(s.id, chosen);
+  }
+
   Future<void> _editNumber(
       BuildContext context, Setting s, double current) async {
+    final (min, max, step) = switch (s.kind) {
+      SettingKind_Number(:final min, :final max, :final step) => (min, max, step),
+      _ => (null, null, null),
+    };
     final controller = TextEditingController(text: fmtNum(current));
+    final hint = (min != null && max != null)
+        ? 'Allowed: ${fmtNum(min)} – ${fmtNum(max)}'
+        : null;
     final result = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(s.label ?? prettyId(s.id)),
-        content: TextField(
-          controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, controller.text),
-              child: const Text('Set')),
-        ],
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) {
+          double? parsed() => double.tryParse(controller.text.trim());
+          String? error() {
+            final v = parsed();
+            if (v == null) return 'Enter a number';
+            if (min != null && v < min) return 'Minimum is ${fmtNum(min)}';
+            if (max != null && v > max) return 'Maximum is ${fmtNum(max)}';
+            return null;
+          }
+          return AlertDialog(
+            title: Text(s.label ?? prettyId(s.id)),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              onChanged: (_) => setLocal(() {}),
+              decoration: InputDecoration(helperText: hint, errorText: error()),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+              TextButton(
+                onPressed: error() == null
+                    ? () {
+                        var v = parsed()!;
+                        // Snap to step so we only send valid values.
+                        if (step != null && step > 0) {
+                          v = (v / step).round() * step;
+                        }
+                        if (min != null) v = v < min ? min : v;
+                        if (max != null) v = v > max ? max : v;
+                        Navigator.pop(ctx, fmtNum(v));
+                      }
+                    : null,
+                child: const Text('Set'),
+              ),
+            ],
+          );
+        },
       ),
     );
     if (result != null) onSet(s.id, result);

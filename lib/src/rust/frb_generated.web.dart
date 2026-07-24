@@ -141,6 +141,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<Setting> dco_decode_list_setting(dynamic raw);
 
   @protected
+  List<SettingOptionDart> dco_decode_list_setting_option_dart(dynamic raw);
+
+  @protected
   List<Switch> dco_decode_list_switch(dynamic raw);
 
   @protected
@@ -175,6 +178,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SettingKind dco_decode_setting_kind(dynamic raw);
+
+  @protected
+  SettingOptionDart dco_decode_setting_option_dart(dynamic raw);
 
   @protected
   SettingValue dco_decode_setting_value(dynamic raw);
@@ -325,6 +331,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<Setting> sse_decode_list_setting(SseDeserializer deserializer);
 
   @protected
+  List<SettingOptionDart> sse_decode_list_setting_option_dart(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<Switch> sse_decode_list_switch(SseDeserializer deserializer);
 
   @protected
@@ -361,6 +372,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SettingKind sse_decode_setting_kind(SseDeserializer deserializer);
+
+  @protected
+  SettingOptionDart sse_decode_setting_option_dart(
+    SseDeserializer deserializer,
+  );
 
   @protected
   SettingValue sse_decode_setting_value(SseDeserializer deserializer);
@@ -534,6 +550,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_setting(List<Setting> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_setting_option_dart(
+    List<SettingOptionDart> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_switch(List<Switch> self, SseSerializer serializer);
 
   @protected
@@ -571,6 +593,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_setting_kind(SettingKind self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_setting_option_dart(
+    SettingOptionDart self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_setting_value(SettingValue self, SseSerializer serializer);

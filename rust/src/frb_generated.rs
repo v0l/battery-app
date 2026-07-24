@@ -944,6 +944,20 @@ impl SseDecode for Vec<crate::api::battery::Setting> {
     }
 }
 
+impl SseDecode for Vec<crate::api::battery::SettingOptionDart> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::battery::SettingOptionDart>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::battery::Switch> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1122,7 +1136,8 @@ impl SseDecode for crate::api::battery::SettingKind {
                 };
             }
             2 => {
-                let mut var_options = <Vec<String>>::sse_decode(deserializer);
+                let mut var_options =
+                    <Vec<crate::api::battery::SettingOptionDart>>::sse_decode(deserializer);
                 return crate::api::battery::SettingKind::Enum {
                     options: var_options,
                 };
@@ -1134,6 +1149,18 @@ impl SseDecode for crate::api::battery::SettingKind {
                 unimplemented!("");
             }
         }
+    }
+}
+
+impl SseDecode for crate::api::battery::SettingOptionDart {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_value = <String>::sse_decode(deserializer);
+        let mut var_label = <String>::sse_decode(deserializer);
+        return crate::api::battery::SettingOptionDart {
+            value: var_value,
+            label: var_label,
+        };
     }
 }
 
@@ -1647,6 +1674,27 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::battery::SettingKind>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::battery::SettingOptionDart {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.value.into_into_dart().into_dart(),
+            self.label.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::battery::SettingOptionDart
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::battery::SettingOptionDart>
+    for crate::api::battery::SettingOptionDart
+{
+    fn into_into_dart(self) -> crate::api::battery::SettingOptionDart {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::battery::SettingValue {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
@@ -2004,6 +2052,16 @@ impl SseEncode for Vec<crate::api::battery::Setting> {
     }
 }
 
+impl SseEncode for Vec<crate::api::battery::SettingOptionDart> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::battery::SettingOptionDart>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::battery::Switch> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -2159,7 +2217,7 @@ impl SseEncode for crate::api::battery::SettingKind {
             }
             crate::api::battery::SettingKind::Enum { options } => {
                 <i32>::sse_encode(2, serializer);
-                <Vec<String>>::sse_encode(options, serializer);
+                <Vec<crate::api::battery::SettingOptionDart>>::sse_encode(options, serializer);
             }
             crate::api::battery::SettingKind::Text => {
                 <i32>::sse_encode(3, serializer);
@@ -2168,6 +2226,14 @@ impl SseEncode for crate::api::battery::SettingKind {
                 unimplemented!("");
             }
         }
+    }
+}
+
+impl SseEncode for crate::api::battery::SettingOptionDart {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.value, serializer);
+        <String>::sse_encode(self.label, serializer);
     }
 }
 

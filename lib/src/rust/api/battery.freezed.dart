@@ -455,7 +455,7 @@ return text(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  bool,TResult Function( double? min,  double? max,  double? step,  String unit)?  number,TResult Function( List<String> options)?  enum_,TResult Function()?  text,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  bool,TResult Function( double? min,  double? max,  double? step,  String unit)?  number,TResult Function( List<SettingOptionDart> options)?  enum_,TResult Function()?  text,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case SettingKind_Bool() when bool != null:
 return bool();case SettingKind_Number() when number != null:
@@ -479,7 +479,7 @@ return text();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  bool,required TResult Function( double? min,  double? max,  double? step,  String unit)  number,required TResult Function( List<String> options)  enum_,required TResult Function()  text,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  bool,required TResult Function( double? min,  double? max,  double? step,  String unit)  number,required TResult Function( List<SettingOptionDart> options)  enum_,required TResult Function()  text,}) {final _that = this;
 switch (_that) {
 case SettingKind_Bool():
 return bool();case SettingKind_Number():
@@ -499,7 +499,7 @@ return text();}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  bool,TResult? Function( double? min,  double? max,  double? step,  String unit)?  number,TResult? Function( List<String> options)?  enum_,TResult? Function()?  text,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  bool,TResult? Function( double? min,  double? max,  double? step,  String unit)?  number,TResult? Function( List<SettingOptionDart> options)?  enum_,TResult? Function()?  text,}) {final _that = this;
 switch (_that) {
 case SettingKind_Bool() when bool != null:
 return bool();case SettingKind_Number() when number != null:
@@ -621,11 +621,11 @@ as String,
 
 
 class SettingKind_Enum extends SettingKind {
-  const SettingKind_Enum({required final  List<String> options}): _options = options,super._();
+  const SettingKind_Enum({required final  List<SettingOptionDart> options}): _options = options,super._();
   
 
- final  List<String> _options;
- List<String> get options {
+ final  List<SettingOptionDart> _options;
+ List<SettingOptionDart> get options {
   if (_options is EqualUnmodifiableListView) return _options;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_options);
@@ -662,7 +662,7 @@ abstract mixin class $SettingKind_EnumCopyWith<$Res> implements $SettingKindCopy
   factory $SettingKind_EnumCopyWith(SettingKind_Enum value, $Res Function(SettingKind_Enum) _then) = _$SettingKind_EnumCopyWithImpl;
 @useResult
 $Res call({
- List<String> options
+ List<SettingOptionDart> options
 });
 
 
@@ -682,7 +682,7 @@ class _$SettingKind_EnumCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') $Res call({Object? options = null,}) {
   return _then(SettingKind_Enum(
 options: null == options ? _self._options : options // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as List<SettingOptionDart>,
   ));
 }
 

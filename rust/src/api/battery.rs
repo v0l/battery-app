@@ -226,8 +226,16 @@ pub enum SettingKind {
     Bool,
     /// `unit` is a display symbol (e.g. `"V"`, `"%"`), empty for none.
     Number { min: Option<f64>, max: Option<f64>, step: Option<f64>, unit: String },
-    Enum { options: Vec<String> },
+    /// The valid inputs for this setting (value + display label).
+    Enum { options: Vec<SettingOptionDart> },
     Text,
+}
+
+/// One allowed choice for an enum setting.
+#[derive(Clone)]
+pub struct SettingOptionDart {
+    pub value: String,
+    pub label: String,
 }
 
 impl From<&bc::SettingKind> for SettingKind {
@@ -240,7 +248,12 @@ impl From<&bc::SettingKind> for SettingKind {
                 step: *step,
                 unit: unit.map(|u| u.symbol().to_string()).unwrap_or_default(),
             },
-            bc::SettingKind::Enum { options } => SettingKind::Enum { options: options.clone() },
+            bc::SettingKind::Enum { options } => SettingKind::Enum {
+                options: options
+                    .iter()
+                    .map(|o| SettingOptionDart { value: o.value.clone(), label: o.label.clone() })
+                    .collect(),
+            },
             bc::SettingKind::Text => SettingKind::Text,
         }
     }
