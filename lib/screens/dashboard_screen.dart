@@ -146,13 +146,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   bool? _effective(String id) => _pending[id] ?? _liveBool(id);
 
+  /// Serialize writes: chain each behind the previous so rapid back-to-back
+  /// toggles run one at a time (the device can't handle overlapping secure
+  /// writes), and the busy state can't wedge from racing futures.
+  Future<void> _writeChain = Future.value();
+  Future<void> _enqueue(Future<void> Function() op) {
+    final next = _writeChain.then((_) => op(), onError: (_) => op());
+    _writeChain = next.catchError((_) {});
+    return next;
+  }
+
   Future<void> _toggle(String id, bool on) async {
     setState(() {
       _pending[id] = on;
       _busy = true;
     });
     try {
-      await _withAuthRetry(() => widget.conn.toggle(id: id, on_: on));
+      await _enqueue(() => _withAuthRetry(() => widget.conn.toggle(id: id, on_: on)));
     } catch (e) {
       if (mounted) {
         setState(() => _pending.remove(id));
@@ -167,7 +177,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _set(String id, String value) async {
     setState(() => _busy = true);
     try {
-      await _withAuthRetry(() => widget.conn.set_(id: id, value: value));
+      await _enqueue(() => _withAuthRetry(() => widget.conn.set_(id: id, value: value)));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
