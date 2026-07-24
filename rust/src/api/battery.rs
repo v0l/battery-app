@@ -403,7 +403,15 @@ pub async fn connect(query: String, ble_secs: u64) -> Result<BatteryConn> {
     // Prime a full snapshot before streaming so the first subscriber sees
     // complete state, rather than an empty view that fills in only as values
     // change. (For push backends this is the first full telemetry frame.)
-    let init = battery.status().await.unwrap_or_default();
+    //
+    // Skip it for auth-gated devices: their telemetry only starts after the UI
+    // authenticates (post-connect), so priming here would just block on the full
+    // status() timeout (~12 s) every connect. Open immediately instead.
+    let init = if caps.requires_auth {
+        bc::BatteryStatus::default()
+    } else {
+        battery.status().await.unwrap_or_default()
+    };
 
     let (cmd_tx, cmd_rx) = tokio::sync::mpsc::channel::<CmdMsg>(8);
     let (current, _) = tokio::sync::watch::channel(init.clone());
